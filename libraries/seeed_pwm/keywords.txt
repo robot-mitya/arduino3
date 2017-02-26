@@ -1,0 +1,22 @@
+#######################################
+# Syntax Coloring Map For seeed_pwm 
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+PWM	KEYWORD1
+seeed_pwm	KEYWORD1
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+init	KEYWORD2
+setPwm	KEYWORD2
+disablePwm	KEYWORD2
+disablePwm	KEYWORD2
+setFreq	KEYWORD2
+setPwmDuty	KEYWORD2
+#######################################
+# Constants (LITERAL1)
+#######################################
+TIMER1COUNT	LITERAL1
