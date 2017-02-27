@@ -9,7 +9,8 @@ namespace robot_mitya
       CMD_STATUS_RESPONSE = 20,
       CMD_MOTOR_LEFT = 30,
       CMD_MOTOR_RIGHT = 40,
-      CMD_MOTOR_BOTH = 50
+      CMD_MOTOR_BOTH = 50,
+      CMD_LED = 60
   };
   
   class Message

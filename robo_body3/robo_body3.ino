@@ -36,6 +36,9 @@ void commandHandler(Command command, int param1, int param2, int param3)
       //sendEcho("!MB", param1, param2, param3);
       Equipment::motorBoth(param1);
       break;
+    case CMD_LED:
+      Equipment::headlights(param1 != 0);
+      break;
     default:
       Message::send(Message::RET_BAD_COMMAND);
   }

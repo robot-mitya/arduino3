@@ -162,6 +162,11 @@ bool Message::getCommand(char *text, Command &command)
     command = CMD_MOTOR_BOTH;
     return true;
   }
+  if (strcmp(text, "LED") == 0)
+  {
+    command = CMD_LED;
+    return true;
+  }
   command = CMD_UNKNOWN;
   return false;
 }

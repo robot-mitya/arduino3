@@ -21,6 +21,8 @@ namespace robot_mitya
       static void motorRight(int speed);//speed: -100..+100
       static void motorBoth(int speed); //speed: -100..+100
       static void motorStop();
+
+      static void headlights(bool turnOn);
     private:
       static void processSpeedAndDirection(int &speed, unsigned char &direction);
   };
