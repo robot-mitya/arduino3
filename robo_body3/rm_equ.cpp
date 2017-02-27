@@ -1,14 +1,13 @@
+#include "rm_cfg.h"
 #include "rm_equ.h"
 #include "motordriver_4wd.h"
 #include <Arduino.h>
 
 using namespace robot_mitya;
 
-#define PIN_HEADLIGHTS 13
-
 void Equipment::initialize()
 {
-  pinMode(PIN_HEADLIGHTS, OUTPUT);
+  pinMode(Cfg::PIN_HEADLIGHTS, OUTPUT);
   MOTOR.init();
 }
 
@@ -61,6 +60,6 @@ void Equipment::processSpeedAndDirection(int &speed, unsigned char &direction)
 
 void Equipment::headlights(bool turnOn)
 {
-  digitalWrite(PIN_HEADLIGHTS, turnOn);
+  digitalWrite(Cfg::PIN_HEADLIGHTS, turnOn);
 }
 

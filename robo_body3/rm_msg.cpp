@@ -1,10 +1,10 @@
+#include "rm_cfg.h"
 #include "rm_msg.h"
 #include <HardwareSerial.h>
 
 using namespace robot_mitya;
 
 #define ROBO_SERIAL Serial
-#define SERIAL_BAUD_RATE 9600
 
 static char charArray[2] = "\0\0";
 static char commandText[11] = "";
@@ -17,7 +17,7 @@ static bool inWordSeparator = false;
 
 void Message::initialize()
 {
-  ROBO_SERIAL.begin(SERIAL_BAUD_RATE);
+  ROBO_SERIAL.begin(Cfg::SERIAL_BAUD_RATE);
 }
 
 void Message::send(char *message)
