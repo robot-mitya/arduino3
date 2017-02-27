@@ -15,28 +15,48 @@ void loop() {
   Message::processInput(commandHandler);
 }
 
-void commandHandler(String command, int param1, int param2, int param3)
+void commandHandler(Command command, int param1, int param2, int param3)
 {
-  //Message::send(command + "(" + param1 + "," + param2 + "," + param3 + ")\r\n");
-  if (command.equals("?"))
+  switch (command)
   {
-    Message::send(Message::RET_OK);
-  }
-  else if (command.equals("ML"))
-  {
-    Equipment::motorLeft(param1);
-  }
-  else if (command.equals("MR"))
-  {
-    Equipment::motorRight(param1);
-  }
-  else if (command.equals("MB"))
-  {
-    Equipment::motorBoth(param1);
-  }
-  else
-  {
-    Message::send(Message::RET_BAD_COMMAND);
+    case CMD_STATUS_REQUEST:
+      Message::send(Message::RET_OK);
+      break;
+    case CMD_STATUS_RESPONSE:
+      break;
+    case CMD_MOTOR_LEFT:
+      //sendEcho("!ML", param1, param2, param3);
+      Equipment::motorLeft(param1);
+      break;
+    case CMD_MOTOR_RIGHT:
+      //sendEcho("!MR", param1, param2, param3);
+      Equipment::motorRight(param1);
+      break;
+    case CMD_MOTOR_BOTH:
+      //sendEcho("!MB", param1, param2, param3);
+      Equipment::motorBoth(param1);
+      break;
+    default:
+      Message::send(Message::RET_BAD_COMMAND);
   }
 }
+
+char* intToString(int value)
+{
+  char result[7];
+  itoa(value, result, 10);
+  return result;
+}
+
+//void sendEcho(char commandText[25], int param1, int param2, int param3)
+//{
+//  Message::send(commandText);
+//  Message::send(" ");
+//  Message::send(intToString(param1));
+//  Message::send(" ");
+//  Message::send(intToString(param2));
+//  Message::send(" ");
+//  Message::send(intToString(param3));
+//  Message::send(";\r\n");
+//}
 

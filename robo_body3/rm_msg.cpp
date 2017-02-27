@@ -6,10 +6,11 @@ using namespace robot_mitya;
 #define ROBO_SERIAL Serial
 #define SERIAL_BAUD_RATE 9600
 
-static String commandText = "";
-static String param1Text = "";
-static String param2Text = "";
-static String param3Text = "";
+static char charArray[2] = "\0\0";
+static char commandText[11] = "";
+static char param1Text[7] = "";
+static char param2Text[7] = "";
+static char param3Text[7] = "";
 static int wordCounter = 0;
 static bool hasError = false;
 static bool inWordSeparator = false;
@@ -19,7 +20,7 @@ void Message::initialize()
   ROBO_SERIAL.begin(SERIAL_BAUD_RATE);
 }
 
-void Message::send(String message)
+void Message::send(char *message)
 {
   ROBO_SERIAL.print(message);
 }
@@ -32,9 +33,10 @@ void Message::send(int status)
   ROBO_SERIAL.print(COMMAND_SEPARATOR);
 }
 
-void Message::processInput(void (*handler)(String, int, int, int))
+void Message::processInput(void (*handler)(Command, int, int, int))
 {
   char ch;
+  Command command;
   int value1, value2, value3;
   while (ROBO_SERIAL.available() > 0)
   {
@@ -42,24 +44,33 @@ void Message::processInput(void (*handler)(String, int, int, int))
 
     if (ch == COMMAND_SEPARATOR && handler != NULL)
     {
-      if (getParam(param1Text, value1) && getParam(param2Text, value2) && getParam(param3Text, value3))
+      if (getCommand(commandText, command))
       {
-        if (!hasError)
+        if (getParam(param1Text, value1) && 
+            getParam(param2Text, value2) && 
+            getParam(param3Text, value3))
         {
-          if (!commandText.equals("") || value1 != 0 || value2 != 0 || value3 != 0)
+          if (!hasError)
           {
-            handler(commandText, value1, value2, value3);
+            if (command != CMD_UNKNOWN || value1 != 0 || value2 != 0 || value3 != 0)
+            {
+              handler(command, value1, value2, value3);
+            }
           }
+        }
+        else
+        {
+          send(RET_BAD_PARAMETER);
         }
       }
       else
       {
-        send(RET_BAD_PARAMETER);
+        send(RET_BAD_COMMAND);
       }
-      commandText = "";
-      param1Text = "";
-      param2Text = "";
-      param3Text = "";
+      strcpy(commandText, "");
+      strcpy(param1Text, "");
+      strcpy(param2Text, "");
+      strcpy(param3Text, "");
       wordCounter = 0;
       hasError = false;
       inWordSeparator = false;
@@ -77,19 +88,20 @@ void Message::processInput(void (*handler)(String, int, int, int))
     }
 
     inWordSeparator = false;
+    charArray[0] = ch;
     switch (wordCounter)
     {
       case 0:
-        commandText += ch;
+        strcat(commandText, charArray);
         break;
       case 1:
-        param1Text += ch;
+        strcat(param1Text, charArray);
         break;
       case 2:
-        param2Text += ch;
+        strcat(param2Text, charArray);
         break;
       case 3:
-        param3Text += ch;
+        strcat(param3Text, charArray);
         break;
       default:
         if (!hasError) send(RET_TOO_MANY_WORDS);
@@ -117,23 +129,60 @@ int Message::charToInt(char ch)
   }
 }
 
-bool Message::getParam(String text, int &value)
+bool Message::getCommand(char *text, Command &command)
 {
-  int length = text.length();
+  int length = strlen(text);
+  if (length == 0)
+  {
+    command = CMD_UNKNOWN;
+    return false;
+  }
+  if (strcmp(text, "?") == 0)
+  {
+    command = CMD_STATUS_REQUEST;
+    return true;
+  }
+  if (strcmp(text, "!") == 0)
+  {
+    command = CMD_STATUS_RESPONSE;
+    return true;
+  }
+  if (strcmp(text, "ML") == 0)
+  {
+    command = CMD_MOTOR_LEFT;
+    return true;
+  }
+  if (strcmp(text, "MR") == 0)
+  {
+    command = CMD_MOTOR_RIGHT;
+    return true;
+  }
+  if (strcmp(text, "MB") == 0)
+  {
+    command = CMD_MOTOR_BOTH;
+    return true;
+  }
+  command = CMD_UNKNOWN;
+  return false;
+}
+
+bool Message::getParam(char *text, int &value)
+{
+  int length = strlen(text);
   if (length == 0)
   {
     value = 0;
     return true;
   }
-  bool isNegative = text.charAt(0) == '-';
-  if (isNegative) text.setCharAt(0, '0');
+  bool isNegative = text[0] == '-';
+  if (isNegative) text[0] = '0';
   int last = length - 1;
   value = 0;
   int digit;
   int factor = 1;
   for (int i = last; i >= 0; i--)
   {
-    digit = charToInt(text.charAt(i));
+    digit = charToInt(text[i]);
     if (digit < 0)
     {
       value = 0;
