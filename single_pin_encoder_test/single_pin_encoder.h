@@ -3,21 +3,27 @@
 
 enum Direction { POSITIVE, NEGATIVE };
 
+struct Speed {
+  unsigned long Duration;
+  long Steps;
+};
+
+typedef void (*SpeedHandler)(Speed speed);
+
 class SinglePinEncoder
 {
   public:
     static const unsigned long DEFAULT_CHECK_PIN_PERIOD = 500;
-    static const unsigned long DEFAULT_MEASURE_SPEED_PERIOD = 500000 * 2;
+    static const unsigned long DEFAULT_SPEED_HANDLER_PERIOD = 1000000;
   
     SinglePinEncoder();
     SinglePinEncoder(int pin);
-    SinglePinEncoder(int pin, unsigned long checkPinPeriod, unsigned long measureSpeedPeriod);
+    SinglePinEncoder(int pin, unsigned long checkPinPeriod);
 
     void init(int pin);
-    void init(int pin, unsigned long checkPinPeriod, unsigned long measureSpeedPeriod);
+    void init(int pin, unsigned long checkPinPeriod);
     void update();
     void update(unsigned long currentMicros);
-    void clear();
     
     void setDirection(Direction direction);
     Direction getDirection();
@@ -25,19 +31,20 @@ class SinglePinEncoder
     void setCheckPinPeriod(unsigned long periodInMicros);
     unsigned long getCheckPinPeriod();
 
-    void setMeasureSpeedPeriod(unsigned long periodInMicros);
-    unsigned long getMeasureSpeedPeriod();
+    long getPositiveSteps();
+    long getNegativeSteps();
+    long getSteps();
+    void clearSteps();
 
-    long GetPositiveSteps();
-    long GetNegativeSteps();
-    long GetSteps();
-
-    void GetSpeed(unsigned long &duration, long &steps);
+    Speed getSpeed(unsigned long currentMicros);
+    void setSpeedHandler(SpeedHandler speedHandler);
+    void clearSpeedHandler();
+    void setSpeedHandlerPeriod(unsigned long periodInMicros);
+    unsigned long getSpeedHandlerPeriod();
   private:
     int pin;
     unsigned long checkPinPeriod;
     unsigned long previousCheckPinMicros;
-    unsigned long measureSpeedPeriod;
     unsigned long previousMeasureSpeedMicros;
     int previousPinValue;
     bool checkingPinValue;
@@ -48,11 +55,12 @@ class SinglePinEncoder
 
     void onPinValueChanged(bool pinValue);
 
-    unsigned long speedMeasureDuration;
-    long speedMeasureSteps;
     long previousPositiveSteps;
     long previousNegativeSteps;
-    void calculateSpeed(unsigned long currentMicros);
+
+    SpeedHandler speedHandler;
+    unsigned long speedHandlerPeriod;
+    void processSpeedHandler(unsigned long currentMicros);
 };
 
 #endif
