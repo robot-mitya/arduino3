@@ -16,6 +16,7 @@ namespace robot_mitya
     public:
       static void initialize();
       static void zero();
+      static void update(unsigned long currentMicros);
 
       static void motorLeft(int speed); //speed: -100..+100
       static void motorRight(int speed);//speed: -100..+100
@@ -23,6 +24,11 @@ namespace robot_mitya
       static void motorStop();
 
       static void headlights(bool turnOn);
+
+      static void clearLeftEncoderSteps();
+      static void clearRightEncoderSteps();
+      static long getLeftEncoderSteps();
+      static long getRightEncoderSteps();
     private:
       static void processSpeedAndDirection(int &speed, unsigned char &direction);
   };

@@ -16,6 +16,10 @@ namespace robot_mitya
       static const int SERIAL_BAUD_RATE = 9600;
       // Headlights pin.
       static const int PIN_HEADLIGHTS = 13;
+      // Left encoder pin.
+      static const int PIN_LEFT_ENCODER = 2;
+      // Right encoder pin.
+      static const int PIN_RIGHT_ENCODER = 3;
   };
 }
 

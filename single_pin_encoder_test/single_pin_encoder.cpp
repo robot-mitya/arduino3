@@ -22,7 +22,7 @@ void SinglePinEncoder::init(int pin, unsigned long checkPinPeriod) {
   this->checkPinPeriod = checkPinPeriod;
   previousPinValue = LOW;
   speedHandler = NULL;
-  speedHandlerPeriod = DEFAULT_SPEED_HANDLER_PERIOD;
+  speedHandlerPeriod = DEFAULT_HANDLER_PERIOD;
   direction = POSITIVE;
   clearSteps();
   pinMode(pin, INPUT);
@@ -53,6 +53,7 @@ void SinglePinEncoder::update(unsigned long currentMicros) {
       }
     }
 
+    processStepsHandler(currentMicros);
     processSpeedHandler(currentMicros);
   }  
 }
@@ -74,6 +75,19 @@ unsigned long SinglePinEncoder::getCheckPinPeriod() {
   return checkPinPeriod;
 }
 
+void SinglePinEncoder::onPinValueChanged(bool pinValue) {
+  if (direction == POSITIVE && pinValue == HIGH) positiveSteps++;
+  else if (direction == NEGATIVE && pinValue == LOW) negativeSteps++;
+}
+
+void SinglePinEncoder::clearSteps() {
+  checkingPinValue = false;
+  positiveSteps = 0;
+  negativeSteps = 0;
+  previousPositiveSteps = 0;
+  previousNegativeSteps = 0;
+}
+
 long SinglePinEncoder::getPositiveSteps() {
   return positiveSteps;
 }
@@ -86,17 +100,29 @@ long SinglePinEncoder::getSteps() {
   return positiveSteps - negativeSteps;
 }
 
-void SinglePinEncoder::clearSteps() {
-  checkingPinValue = false;
-  positiveSteps = 0;
-  negativeSteps = 0;
-  previousPositiveSteps = 0;
-  previousNegativeSteps = 0;
+void SinglePinEncoder::processStepsHandler(unsigned long currentMicros) {
+  if (stepsHandler == NULL) return;
+
+  if (currentMicros - previousMeasureStepsMicros >= stepsHandlerPeriod) {
+    stepsHandler(positiveSteps - negativeSteps);
+    previousMeasureStepsMicros = currentMicros;
+  }
 }
 
-void SinglePinEncoder::onPinValueChanged(bool pinValue) {
-  if (direction == POSITIVE && pinValue == HIGH) positiveSteps++;
-  else if (direction == NEGATIVE && pinValue == LOW) negativeSteps++;
+void SinglePinEncoder::setStepsHandler(StepsHandler stepsHandler) {
+  this->stepsHandler = stepsHandler;
+}
+
+void SinglePinEncoder::clearStepsHandler() {
+  stepsHandler = NULL;
+}
+
+void SinglePinEncoder::setStepsHandlerPeriod(unsigned long periodInMicros) {
+  stepsHandlerPeriod = periodInMicros;
+}
+
+unsigned long SinglePinEncoder::getStepsHandlerPeriod() {
+  return stepsHandlerPeriod;
 }
 
 Speed SinglePinEncoder::getSpeed(unsigned long currentMicros) {

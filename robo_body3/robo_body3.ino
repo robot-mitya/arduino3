@@ -13,6 +13,8 @@ void setup() {
 
 void loop() {
   Message::processInput(commandHandler);
+  unsigned long currentMicros = micros();
+  Equipment::update(currentMicros);
 }
 
 void commandHandler(Command command, int param1, int param2, int param3)
@@ -38,6 +40,25 @@ void commandHandler(Command command, int param1, int param2, int param3)
       break;
     case CMD_LED:
       Equipment::headlights(param1 != 0);
+      break;
+    case CMD_ENCL_REQUEST:
+      if (param1 == 1)
+        Equipment::clearLeftEncoderSteps();
+      Message::sendENCL(Equipment::getLeftEncoderSteps());
+      break;
+    case CMD_ENCR_REQUEST:
+      if (param1 == 1)
+        Equipment::clearRightEncoderSteps();
+      Message::sendENCR(Equipment::getRightEncoderSteps());
+      break;
+    case CMD_ENCB_REQUEST:
+      if (param1 == 1)
+      {
+        Equipment::clearLeftEncoderSteps();
+        Equipment::clearRightEncoderSteps();
+      }
+      Message::sendENCL(Equipment::getLeftEncoderSteps());
+      Message::sendENCR(Equipment::getRightEncoderSteps());
       break;
     default:
       Message::send(Message::RET_BAD_COMMAND);

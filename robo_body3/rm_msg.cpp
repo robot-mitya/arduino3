@@ -33,6 +33,22 @@ void Message::send(int status)
   ROBO_SERIAL.print(COMMAND_SEPARATOR);
 }
 
+void Message::sendENCL(long steps)
+{
+  ROBO_SERIAL.print("!ENCL");
+  ROBO_SERIAL.print(WORD_SEPARATOR);
+  ROBO_SERIAL.print(steps);
+  ROBO_SERIAL.print(COMMAND_SEPARATOR);
+}
+
+void Message::sendENCR(long steps)
+{
+  ROBO_SERIAL.print("!ENCR");
+  ROBO_SERIAL.print(WORD_SEPARATOR);
+  ROBO_SERIAL.print(steps);
+  ROBO_SERIAL.print(COMMAND_SEPARATOR);
+}
+
 void Message::processInput(void (*handler)(Command, int, int, int))
 {
   char ch;
@@ -165,6 +181,31 @@ bool Message::getCommand(char *text, Command &command)
   if (strcmp(text, "LED") == 0)
   {
     command = CMD_LED;
+    return true;
+  }
+  if (strcmp(text, "?ENCL") == 0)
+  {
+    command = CMD_ENCL_REQUEST;
+    return true;
+  }
+  if (strcmp(text, "?ENCR") == 0)
+  {
+    command = CMD_ENCR_REQUEST;
+    return true;
+  }
+  if (strcmp(text, "?ENCB") == 0)
+  {
+    command = CMD_ENCB_REQUEST;
+    return true;
+  }
+  if (strcmp(text, "!ENCL") == 0)
+  {
+    command = CMD_ENCL_RESPONSE;
+    return true;
+  }
+  if (strcmp(text, "!ENCR") == 0)
+  {
+    command = CMD_ENCR_RESPONSE;
     return true;
   }
   command = CMD_UNKNOWN;

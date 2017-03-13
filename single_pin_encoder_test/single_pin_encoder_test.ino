@@ -1,5 +1,11 @@
 #include "single_pin_encoder.h"
 
+void stepsHandler(long steps) {
+  Serial.print("Steps: ");
+  Serial.print(steps);
+  Serial.println();
+}
+
 void speedHandler(Speed speed) {
   Serial.print("Duration: ");
   Serial.print(speed.Duration);
@@ -50,9 +56,12 @@ void loop() {
 */
 void setup() {
   Serial.begin(9600);
-  encoderLeft.setSpeedHandler(speedHandler);
-  encoderLeft.setSpeedHandlerPeriod(3000000);
+//  encoderLeft.setSpeedHandler(speedHandler);
+//  encoderLeft.setSpeedHandlerPeriod(3000000);
   //encoderLeft.setDirection(NEGATIVE);
+
+  encoderLeft.setStepsHandler(stepsHandler);
+  encoderLeft.setStepsHandlerPeriod(3000000);
 }
 
 void loop() {

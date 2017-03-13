@@ -8,13 +8,14 @@ struct Speed {
   long Steps;
 };
 
+typedef void (*StepsHandler)(long steps);
 typedef void (*SpeedHandler)(Speed speed);
 
 class SinglePinEncoder
 {
   public:
     static const unsigned long DEFAULT_CHECK_PIN_PERIOD = 500;
-    static const unsigned long DEFAULT_SPEED_HANDLER_PERIOD = 1000000;
+    static const unsigned long DEFAULT_HANDLER_PERIOD = 1000000;
   
     SinglePinEncoder();
     SinglePinEncoder(int pin);
@@ -31,10 +32,14 @@ class SinglePinEncoder
     void setCheckPinPeriod(unsigned long periodInMicros);
     unsigned long getCheckPinPeriod();
 
+    void clearSteps();
     long getPositiveSteps();
     long getNegativeSteps();
     long getSteps();
-    void clearSteps();
+    void setStepsHandler(StepsHandler stepsHandler);
+    void clearStepsHandler();
+    void setStepsHandlerPeriod(unsigned long periodInMicros);
+    unsigned long getStepsHandlerPeriod();
 
     Speed getSpeed(unsigned long currentMicros);
     void setSpeedHandler(SpeedHandler speedHandler);
@@ -45,6 +50,7 @@ class SinglePinEncoder
     int pin;
     unsigned long checkPinPeriod;
     unsigned long previousCheckPinMicros;
+    unsigned long previousMeasureStepsMicros;
     unsigned long previousMeasureSpeedMicros;
     int previousPinValue;
     bool checkingPinValue;
@@ -57,6 +63,10 @@ class SinglePinEncoder
 
     long previousPositiveSteps;
     long previousNegativeSteps;
+
+    StepsHandler stepsHandler;
+    unsigned long stepsHandlerPeriod;
+    void processStepsHandler(unsigned long currentMicros);
 
     SpeedHandler speedHandler;
     unsigned long speedHandlerPeriod;

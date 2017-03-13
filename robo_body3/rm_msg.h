@@ -10,7 +10,12 @@ namespace robot_mitya
       CMD_MOTOR_LEFT = 30,
       CMD_MOTOR_RIGHT = 40,
       CMD_MOTOR_BOTH = 50,
-      CMD_LED = 60
+      CMD_LED = 60,
+      CMD_ENCL_REQUEST = 70,
+      CMD_ENCR_REQUEST = 80,
+      CMD_ENCB_REQUEST = 90,
+      CMD_ENCL_RESPONSE = 100,
+      CMD_ENCR_RESPONSE = 110
   };
   
   class Message
@@ -25,6 +30,8 @@ namespace robot_mitya
       static void processInput(void (*handler)(Command, int, int, int));
       static void send(char* message);
       static void send(int status);
+      static void sendENCL(long steps);
+      static void sendENCR(long steps);
     private:
       static const char WORD_SEPARATOR = ' ';
       static const char COMMAND_SEPARATOR = ';';
