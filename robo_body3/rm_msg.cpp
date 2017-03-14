@@ -49,6 +49,11 @@ void Message::sendENCR(long steps)
   ROBO_SERIAL.print(COMMAND_SEPARATOR);
 }
 
+void sendDistance(long distanceInMicrons)
+{
+  //todo...
+}
+
 void Message::processInput(void (*handler)(Command, int, int, int))
 {
   char ch;
@@ -206,6 +211,26 @@ bool Message::getCommand(char *text, Command &command)
   if (strcmp(text, "!ENCR") == 0)
   {
     command = CMD_ENCR_RESPONSE;
+    return true;
+  }
+  if (strcmp(text, "?DIST") == 0)
+  {
+    command = CMD_DIST_REQUEST;
+    return true;
+  }
+  if (strcmp(text, "!DIST") == 0)
+  {
+    command = CMD_DIST_RESPONSE;
+    return true;
+  }
+  if (strcmp(text, "?SPD") == 0)
+  {
+    command = CMD_SPD_REQUEST;
+    return true;
+  }
+  if (strcmp(text, "!SPD") == 0)
+  {
+    command = CMD_SPD_RESPONSE;
     return true;
   }
   command = CMD_UNKNOWN;

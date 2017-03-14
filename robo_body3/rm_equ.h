@@ -29,6 +29,14 @@ namespace robot_mitya
       static void clearRightEncoderSteps();
       static long getLeftEncoderSteps();
       static long getRightEncoderSteps();
+
+      static void clearEncoderDistance();
+      static int getEncoderDistance();
+      static void clearStepsHandler();
+      static void setStepsHandler();
+      
+      static void leftEncoderStepsHandler(long steps);
+      static void rightEncoderStepsHandler(long steps);
     private:
       static void processSpeedAndDirection(int &speed, unsigned char &direction);
   };

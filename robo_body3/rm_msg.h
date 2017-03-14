@@ -15,7 +15,11 @@ namespace robot_mitya
       CMD_ENCR_REQUEST = 80,
       CMD_ENCB_REQUEST = 90,
       CMD_ENCL_RESPONSE = 100,
-      CMD_ENCR_RESPONSE = 110
+      CMD_ENCR_RESPONSE = 110,
+      CMD_DIST_REQUEST = 120,
+      CMD_DIST_RESPONSE = 130,
+      CMD_SPD_REQUEST = 140,
+      CMD_SPD_RESPONSE = 150
   };
   
   class Message
@@ -32,6 +36,7 @@ namespace robot_mitya
       static void send(int status);
       static void sendENCL(long steps);
       static void sendENCR(long steps);
+      static void sendDistance(long distanceInMicrons);
     private:
       static const char WORD_SEPARATOR = ' ';
       static const char COMMAND_SEPARATOR = ';';

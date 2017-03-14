@@ -1,13 +1,19 @@
 #include "rm_cfg.h"
 #include "rm_equ.h"
+#include "rm_msg.h"
 #include "motordriver_4wd.h"
 #include <single_pin_encoder.h>
 #include <Arduino.h>
 
 using namespace robot_mitya;
 
+#define STEP_MICRONS Cfg::STEP_MICRONS
+
 SinglePinEncoder leftEncoder(Cfg::PIN_LEFT_ENCODER);
 SinglePinEncoder rightEncoder(Cfg::PIN_RIGHT_ENCODER);
+
+static long leftEncoderDistance;
+static long rightEncoderDistance;
 
 void Equipment::initialize()
 {
@@ -24,6 +30,8 @@ void Equipment::zero()
 }
 
 void Equipment::update(unsigned long currentMicros) {
+  // Warning! Due to optimization, the order is important.
+  // Fisrt leftEncoder.update, then rightEncoder.update:
   leftEncoder.update(currentMicros);
   rightEncoder.update(currentMicros);
 }
@@ -92,5 +100,43 @@ long Equipment::getLeftEncoderSteps() {
 
 long Equipment::getRightEncoderSteps() {
   return rightEncoder.getSteps();
+}
+
+void Equipment::clearEncoderDistance() {
+  leftEncoder.clearSteps();
+  rightEncoder.clearSteps();
+  leftEncoderDistance = 0;
+  rightEncoderDistance = 0;
+}
+
+int Equipment::getEncoderDistance() {
+  leftEncoderDistance = STEP_MICRONS * leftEncoder.getSteps();
+  rightEncoderDistance = STEP_MICRONS * rightEncoder.getSteps();
+  return (leftEncoderDistance + rightEncoderDistance) / 2;
+}
+
+void Equipment::leftEncoderStepsHandler(long steps) {
+  leftEncoderDistance = STEP_MICRONS * steps;
+}
+
+void Equipment::rightEncoderStepsHandler(long steps) {
+  rightEncoderDistance = STEP_MICRONS * steps;
+
+  // According to Equipment::update rightEncoderStepsHandler is called
+  // after leftEncoderStepsHandler. So leftEncoderDistance is initialized.
+  Message::sendDistance((leftEncoderDistance + rightEncoderDistance) / 2);
+}
+
+void clearStepsHandler() {
+  leftEncoder.clearStepsHandler();
+  rightEncoder.clearStepsHandler();
+}
+
+void setStepsHandler(unsigned long periodInMillis) {
+  leftEncoder.setStepsHandlerPeriod(periodInMillis * 1000);
+  rightEncoder.setStepsHandlerPeriod(periodInMillis * 1000);
+  
+  leftEncoder.setStepsHandler(Equipment::leftEncoderStepsHandler);
+  rightEncoder.setStepsHandler(Equipment::rightEncoderStepsHandler);
 }
 
