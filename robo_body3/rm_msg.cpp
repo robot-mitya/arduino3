@@ -49,9 +49,24 @@ void Message::sendENCR(long steps)
   ROBO_SERIAL.print(COMMAND_SEPARATOR);
 }
 
-void sendDistance(long distanceInMicrons)
+void Message::sendDistance(long distanceInMicrons)
 {
-  //todo...
+  long meters = distanceInMicrons / 1000000;
+  long millimeters = (distanceInMicrons - meters * 1000000) / 1000;
+  ROBO_SERIAL.print("!DIST");
+  ROBO_SERIAL.print(WORD_SEPARATOR);
+  ROBO_SERIAL.print((int) meters);
+  ROBO_SERIAL.print(WORD_SEPARATOR);
+  ROBO_SERIAL.print((int) millimeters);
+  ROBO_SERIAL.print(COMMAND_SEPARATOR);
+}
+
+void Message::sendSpeed(int speedInMetersPerHour)
+{
+  ROBO_SERIAL.print("!SPD");
+  ROBO_SERIAL.print(WORD_SEPARATOR);
+  ROBO_SERIAL.print(speedInMetersPerHour);        //todo Debug value, change it.
+  ROBO_SERIAL.print(COMMAND_SEPARATOR);  
 }
 
 void Message::processInput(void (*handler)(Command, int, int, int))

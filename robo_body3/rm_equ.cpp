@@ -2,7 +2,6 @@
 #include "rm_equ.h"
 #include "rm_msg.h"
 #include "motordriver_4wd.h"
-#include <single_pin_encoder.h>
 #include <Arduino.h>
 
 using namespace robot_mitya;
@@ -14,6 +13,12 @@ SinglePinEncoder rightEncoder(Cfg::PIN_RIGHT_ENCODER);
 
 static long leftEncoderDistance;
 static long rightEncoderDistance;
+
+static long leftEncoderSpeedInMetersPerHour;
+static long rightEncoderSpeedInMetersPerHour;
+
+static int speedHandlerPeriodInMillis;
+static bool waitingSpeedData;
 
 void Equipment::initialize()
 {
@@ -27,6 +32,10 @@ void Equipment::zero()
   Equipment::motorStop();
   Equipment::clearLeftEncoderSteps();
   Equipment::clearRightEncoderSteps();
+  Equipment::clearStepsHandler();
+  Equipment::clearSpeedHandler();
+  speedHandlerPeriodInMillis = -1;
+  waitingSpeedData = false;
 }
 
 void Equipment::update(unsigned long currentMicros) {
@@ -102,14 +111,14 @@ long Equipment::getRightEncoderSteps() {
   return rightEncoder.getSteps();
 }
 
-void Equipment::clearEncoderDistance() {
+void Equipment::clearDistance() {
   leftEncoder.clearSteps();
   rightEncoder.clearSteps();
   leftEncoderDistance = 0;
   rightEncoderDistance = 0;
 }
 
-int Equipment::getEncoderDistance() {
+long Equipment::getDistance() {
   leftEncoderDistance = STEP_MICRONS * leftEncoder.getSteps();
   rightEncoderDistance = STEP_MICRONS * rightEncoder.getSteps();
   return (leftEncoderDistance + rightEncoderDistance) / 2;
@@ -122,21 +131,78 @@ void Equipment::leftEncoderStepsHandler(long steps) {
 void Equipment::rightEncoderStepsHandler(long steps) {
   rightEncoderDistance = STEP_MICRONS * steps;
 
-  // According to Equipment::update rightEncoderStepsHandler is called
-  // after leftEncoderStepsHandler. So leftEncoderDistance is initialized.
+  // According to Equipment::update rightEncoderStepsHandler is called after
+  // leftEncoderStepsHandler. So leftEncoderDistance has been initialized.
   Message::sendDistance((leftEncoderDistance + rightEncoderDistance) / 2);
 }
 
-void clearStepsHandler() {
+void Equipment::clearStepsHandler() {
   leftEncoder.clearStepsHandler();
   rightEncoder.clearStepsHandler();
 }
 
-void setStepsHandler(unsigned long periodInMillis) {
+void Equipment::setStepsHandler(unsigned long periodInMillis) {
   leftEncoder.setStepsHandlerPeriod(periodInMillis * 1000);
   rightEncoder.setStepsHandlerPeriod(periodInMillis * 1000);
   
   leftEncoder.setStepsHandler(Equipment::leftEncoderStepsHandler);
   rightEncoder.setStepsHandler(Equipment::rightEncoderStepsHandler);
+}
+
+long Equipment::getSpeedValueInMetersPerHour(Speed speed) {
+  // That's a tricky part. We have to calculate speed without integer overflow.
+  // "* 36" and "/ 100" are 36000 seconds in an hour.
+  long result = speed.Steps * STEP_MICRONS * 36;
+  long duration = speed.Duration / 100;
+  result /= duration;
+  return result;
+}
+
+void Equipment::getSpeed() {
+  if (waitingSpeedData) return;
+  waitingSpeedData = true;
+
+  leftEncoder.setSpeedHandlerPeriod(1000000); // (one second)
+  rightEncoder.setSpeedHandlerPeriod(1000000);// (one second)
+  
+  leftEncoder.setSpeedHandler(Equipment::leftEncoderSpeedHandler);
+  rightEncoder.setSpeedHandler(Equipment::rightEncoderSpeedHandler);
+}
+
+void Equipment::leftEncoderSpeedHandler(Speed speed) {
+  leftEncoderSpeedInMetersPerHour = getSpeedValueInMetersPerHour(speed);
+}
+
+void Equipment::rightEncoderSpeedHandler(Speed speed) {
+  rightEncoderSpeedInMetersPerHour = getSpeedValueInMetersPerHour(speed);
+  
+  // According to Equipment::update rightEncoderSpeedHandler is called after
+  // leftEncoderSpeedHandler. So leftEncoderSpeedInMetersPerHour has been initialized.
+  long averageSpeed = (leftEncoderSpeedInMetersPerHour + rightEncoderSpeedInMetersPerHour) / 2;
+  Message::sendSpeed((int) averageSpeed);
+
+  if (waitingSpeedData) {
+    waitingSpeedData = false;
+    leftEncoder.clearSpeedHandler();
+    rightEncoder.clearSpeedHandler();
+    Equipment::setSpeedHandler(speedHandlerPeriodInMillis);
+  }
+}
+
+void Equipment::clearSpeedHandler() {
+  leftEncoder.clearSpeedHandler();
+  rightEncoder.clearSpeedHandler();
+  speedHandlerPeriodInMillis = -1;
+}
+
+void Equipment::setSpeedHandler(unsigned long periodInMillis) {
+  if (periodInMillis < 0) return;
+  speedHandlerPeriodInMillis = periodInMillis;
+
+  leftEncoder.setSpeedHandlerPeriod(periodInMillis * 1000);
+  rightEncoder.setSpeedHandlerPeriod(periodInMillis * 1000);
+  
+  leftEncoder.setSpeedHandler(Equipment::leftEncoderSpeedHandler);
+  rightEncoder.setSpeedHandler(Equipment::rightEncoderSpeedHandler);
 }
 

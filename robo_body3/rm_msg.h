@@ -37,6 +37,7 @@ namespace robot_mitya
       static void sendENCL(long steps);
       static void sendENCR(long steps);
       static void sendDistance(long distanceInMicrons);
+      static void sendSpeed(int speedInMetersPerHour);
     private:
       static const char WORD_SEPARATOR = ' ';
       static const char COMMAND_SEPARATOR = ';';

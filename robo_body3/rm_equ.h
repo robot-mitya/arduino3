@@ -9,6 +9,8 @@
 #ifndef rm_equ_h
 #define rm_equ_h
 
+#include <single_pin_encoder.h>
+
 namespace robot_mitya
 {
   class Equipment
@@ -30,15 +32,23 @@ namespace robot_mitya
       static long getLeftEncoderSteps();
       static long getRightEncoderSteps();
 
-      static void clearEncoderDistance();
-      static int getEncoderDistance();
+      static void clearDistance();
+      static long getDistance();
       static void clearStepsHandler();
-      static void setStepsHandler();
+      static void setStepsHandler(unsigned long periodInMillis);
       
       static void leftEncoderStepsHandler(long steps);
       static void rightEncoderStepsHandler(long steps);
+      
+      static void getSpeed();
+      static void clearSpeedHandler();
+      static void setSpeedHandler(unsigned long periodInMillis);
+
+      static void leftEncoderSpeedHandler(Speed speed);
+      static void rightEncoderSpeedHandler(Speed speed);
     private:
       static void processSpeedAndDirection(int &speed, unsigned char &direction);
+      static long getSpeedValueInMetersPerHour(Speed speed);
   };
 }
 
