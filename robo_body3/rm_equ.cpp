@@ -24,6 +24,18 @@ void Equipment::initialize()
 {
   pinMode(Cfg::PIN_HEADLIGHTS, OUTPUT);
   MOTOR.init();
+
+  // "Prewarm" encoders' pins. First pin reading contain garbage data.
+  // Before regular use of Equipment::update we simulate it for 0.5 sec
+  // in initialize section. After that we call Equipment::zero method.
+  unsigned long startMicros = micros();
+  unsigned long currentMicros = startMicros;
+  do {
+    currentMicros = micros();
+    leftEncoder.update(currentMicros);
+    rightEncoder.update(currentMicros);
+  } while (currentMicros - startMicros < 500000);
+  Equipment::zero();
 }
 
 void Equipment::zero()

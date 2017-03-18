@@ -16,7 +16,7 @@ void speedHandler(Speed speed) {
   Serial.println();
 }
 
-SinglePinEncoder encoderLeft(2);
+SinglePinEncoder encoderLeft(3);
 //SinglePinEncoder encoderRight(3);
 
 unsigned long previousMicros;

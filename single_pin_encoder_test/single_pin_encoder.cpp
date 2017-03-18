@@ -14,18 +14,20 @@ SinglePinEncoder::SinglePinEncoder(int pin, unsigned long checkPinPeriod) {
 
 
 void SinglePinEncoder::init(int pin) {
-  init(pin, DEFAULT_CHECK_PIN_PERIOD);
+  init(pin, DEFAULT_CHECK_PIN_PERIOD_IN_MICROS);
 }
 
 void SinglePinEncoder::init(int pin, unsigned long checkPinPeriod) {
   this->pin = pin;
   this->checkPinPeriod = checkPinPeriod;
   previousPinValue = LOW;
+  stepsHandler = NULL;
   speedHandler = NULL;
-  speedHandlerPeriod = DEFAULT_HANDLER_PERIOD;
   direction = POSITIVE;
   clearSteps();
   pinMode(pin, INPUT);
+  firstStepsHandlerIteration = false;
+  firstSpeedHandlerIteration = false;
 }
 
 
@@ -102,6 +104,11 @@ long SinglePinEncoder::getSteps() {
 
 void SinglePinEncoder::processStepsHandler(unsigned long currentMicros) {
   if (stepsHandler == NULL) return;
+  
+  if (firstStepsHandlerIteration) {
+    firstStepsHandlerIteration = false;
+    previousMeasureStepsMicros = currentMicros;
+  }
 
   if (currentMicros - previousMeasureStepsMicros >= stepsHandlerPeriod) {
     stepsHandler(positiveSteps - negativeSteps);
@@ -111,6 +118,7 @@ void SinglePinEncoder::processStepsHandler(unsigned long currentMicros) {
 
 void SinglePinEncoder::setStepsHandler(StepsHandler stepsHandler) {
   this->stepsHandler = stepsHandler;
+  firstStepsHandlerIteration = true;
 }
 
 void SinglePinEncoder::clearStepsHandler() {
@@ -147,6 +155,13 @@ Speed SinglePinEncoder::getSpeed(unsigned long currentMicros) {
 void SinglePinEncoder::processSpeedHandler(unsigned long currentMicros) {
   if (speedHandler == NULL) return;
 
+  if (firstSpeedHandlerIteration) {
+    firstSpeedHandlerIteration = false;
+    previousPositiveSteps = positiveSteps;
+    previousNegativeSteps = negativeSteps;
+    previousMeasureSpeedMicros = currentMicros;
+  }
+
   if (currentMicros - previousMeasureSpeedMicros >= speedHandlerPeriod) {
     Speed speed;    
     speed.Duration = currentMicros - previousMeasureSpeedMicros;
@@ -161,6 +176,7 @@ void SinglePinEncoder::processSpeedHandler(unsigned long currentMicros) {
 
 void SinglePinEncoder::setSpeedHandler(SpeedHandler speedHandler) {
   this->speedHandler = speedHandler;
+  firstSpeedHandlerIteration = true;
 }
 
 void SinglePinEncoder::clearSpeedHandler() {

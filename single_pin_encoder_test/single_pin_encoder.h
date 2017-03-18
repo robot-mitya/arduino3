@@ -14,8 +14,7 @@ typedef void (*SpeedHandler)(Speed speed);
 class SinglePinEncoder
 {
   public:
-    static const unsigned long DEFAULT_CHECK_PIN_PERIOD = 500;
-    static const unsigned long DEFAULT_HANDLER_PERIOD = 1000000;
+    static const unsigned long DEFAULT_CHECK_PIN_PERIOD_IN_MICROS = 500;
   
     SinglePinEncoder();
     SinglePinEncoder(int pin);
@@ -65,10 +64,12 @@ class SinglePinEncoder
     long previousNegativeSteps;
 
     StepsHandler stepsHandler;
+    bool firstStepsHandlerIteration;
     unsigned long stepsHandlerPeriod;
     void processStepsHandler(unsigned long currentMicros);
 
     SpeedHandler speedHandler;
+    bool firstSpeedHandlerIteration;
     unsigned long speedHandlerPeriod;
     void processSpeedHandler(unsigned long currentMicros);
 };

@@ -5,7 +5,6 @@ using namespace robot_mitya;
 
 void setup() {
   Equipment::initialize();
-  Equipment::zero();
 
   Message::initialize();
   Message::send(Message::RET_OK);
