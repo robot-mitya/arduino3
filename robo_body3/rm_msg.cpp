@@ -65,7 +65,15 @@ void Message::sendSpeed(int speedInMetersPerHour)
 {
   ROBO_SERIAL.print("!SPD");
   ROBO_SERIAL.print(WORD_SEPARATOR);
-  ROBO_SERIAL.print(speedInMetersPerHour);        //todo Debug value, change it.
+  ROBO_SERIAL.print(speedInMetersPerHour);
+  ROBO_SERIAL.print(COMMAND_SEPARATOR);  
+}
+
+void Message::sendMicronsPerStep(int micronsPerStep)
+{
+  ROBO_SERIAL.print("!MCPS");
+  ROBO_SERIAL.print(WORD_SEPARATOR);
+  ROBO_SERIAL.print(micronsPerStep);
   ROBO_SERIAL.print(COMMAND_SEPARATOR);  
 }
 
@@ -246,6 +254,16 @@ bool Message::getCommand(char *text, Command &command)
   if (strcmp(text, "!SPD") == 0)
   {
     command = CMD_SPD_RESPONSE;
+    return true;
+  }
+  if (strcmp(text, "?MCPS") == 0)
+  {
+    command = CMD_MCPS_REQUEST;
+    return true;
+  }
+  if (strcmp(text, "!MCPS") == 0)
+  {
+    command = CMD_MCPS_RESPONSE;
     return true;
   }
   command = CMD_UNKNOWN;

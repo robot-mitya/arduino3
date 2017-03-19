@@ -7,10 +7,10 @@
 #ifndef rm_cfg_h
 #define rm_cfg_h
 
-namespace robot_mitya
-{
-  class Cfg
-  {
+#include "rm_eeprom.h"
+
+namespace robot_mitya {
+  class Cfg {
     public:
       // Baud rate of the controller-PC serial link.
       static const int SERIAL_BAUD_RATE = 9600;
@@ -20,8 +20,6 @@ namespace robot_mitya
       static const int PIN_LEFT_ENCODER = 2;
       // Right encoder pin.
       static const int PIN_RIGHT_ENCODER = 3;
-      // One encoder step in micrometers.
-      static const long STEP_MICRONS = 7857;
   };
 }
 

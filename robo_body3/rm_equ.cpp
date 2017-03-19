@@ -1,15 +1,16 @@
 #include "rm_cfg.h"
 #include "rm_equ.h"
 #include "rm_msg.h"
+#include "rm_eeprom.h"
 #include "motordriver_4wd.h"
 #include <Arduino.h>
 
 using namespace robot_mitya;
 
-#define STEP_MICRONS Cfg::STEP_MICRONS
-
 SinglePinEncoder leftEncoder(Cfg::PIN_LEFT_ENCODER);
 SinglePinEncoder rightEncoder(Cfg::PIN_RIGHT_ENCODER);
+
+static long micronsPerEncoderStep;
 
 static long leftEncoderDistance;
 static long rightEncoderDistance;
@@ -24,6 +25,8 @@ void Equipment::initialize()
 {
   pinMode(Cfg::PIN_HEADLIGHTS, OUTPUT);
   MOTOR.init();
+
+  micronsPerEncoderStep = Eeprom::readMicronsPerEncoderStep();
 
   // "Prewarm" encoders' pins. First pin reading contain garbage data.
   // Before regular use of Equipment::update we simulate it for 0.5 sec
@@ -107,6 +110,10 @@ void Equipment::headlights(bool turnOn)
   digitalWrite(Cfg::PIN_HEADLIGHTS, turnOn);
 }
 
+void Equipment::updateMicronsPerEncoderStep(int micronsPerStep) {
+  micronsPerEncoderStep = micronsPerStep;
+}
+
 void Equipment::clearLeftEncoderSteps() {
   leftEncoder.clearSteps();
 }
@@ -131,17 +138,17 @@ void Equipment::clearDistance() {
 }
 
 long Equipment::getDistance() {
-  leftEncoderDistance = STEP_MICRONS * leftEncoder.getSteps();
-  rightEncoderDistance = STEP_MICRONS * rightEncoder.getSteps();
+  leftEncoderDistance = micronsPerEncoderStep * leftEncoder.getSteps();
+  rightEncoderDistance = micronsPerEncoderStep * rightEncoder.getSteps();
   return (leftEncoderDistance + rightEncoderDistance) / 2;
 }
 
 void Equipment::leftEncoderStepsHandler(long steps) {
-  leftEncoderDistance = STEP_MICRONS * steps;
+  leftEncoderDistance = micronsPerEncoderStep * steps;
 }
 
 void Equipment::rightEncoderStepsHandler(long steps) {
-  rightEncoderDistance = STEP_MICRONS * steps;
+  rightEncoderDistance = micronsPerEncoderStep * steps;
 
   // According to Equipment::update rightEncoderStepsHandler is called after
   // leftEncoderStepsHandler. So leftEncoderDistance has been initialized.
@@ -164,7 +171,7 @@ void Equipment::setStepsHandler(unsigned long periodInMillis) {
 long Equipment::getSpeedValueInMetersPerHour(Speed speed) {
   // That's a tricky part. We have to calculate speed without integer overflow.
   // "* 36" and "/ 100" are 36000 seconds in an hour.
-  long result = speed.Steps * STEP_MICRONS * 36;
+  long result = speed.Steps * micronsPerEncoderStep * 36;
   long duration = speed.Duration / 100;
   result /= duration;
   return result;

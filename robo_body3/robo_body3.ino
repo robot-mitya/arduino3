@@ -1,5 +1,6 @@
 #include "rm_equ.h"
 #include "rm_msg.h"
+#include "rm_eeprom.h"
 
 using namespace robot_mitya;
 
@@ -86,6 +87,18 @@ void commandHandler(Command command, int param1, int param2, int param3)
         Message::send(Message::RET_OK);
       } else {
         Message::send(Message::RET_BAD_PARAMETER);
+      }
+      break;
+    case CMD_MCPS_REQUEST:
+      if (param1 < 0) {
+        Message::send(Message::RET_BAD_PARAMETER);
+      } else {
+        if (param1 > 0) {
+          Eeprom::writeMicronsPerEncoderStep(param1);
+        }
+        int micronsPerStep = Eeprom::readMicronsPerEncoderStep();
+        Equipment::updateMicronsPerEncoderStep(micronsPerStep);
+        Message::sendMicronsPerStep(micronsPerStep);
       }
       break;
     default:

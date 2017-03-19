@@ -27,6 +27,8 @@ namespace robot_mitya
 
       static void headlights(bool turnOn);
 
+      static void updateMicronsPerEncoderStep(int micronsPerStep);
+
       static void clearLeftEncoderSteps();
       static void clearRightEncoderSteps();
       static long getLeftEncoderSteps();
