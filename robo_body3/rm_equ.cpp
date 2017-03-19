@@ -21,8 +21,7 @@ static long rightEncoderSpeedInMetersPerHour;
 static int speedHandlerPeriodInMillis;
 static bool waitingSpeedData;
 
-void Equipment::initialize()
-{
+void Equipment::initialize() {
   pinMode(Cfg::PIN_HEADLIGHTS, OUTPUT);
   MOTOR.init();
 
@@ -41,8 +40,7 @@ void Equipment::initialize()
   Equipment::zero();
 }
 
-void Equipment::zero()
-{
+void Equipment::zero() {
   Equipment::headlights(false);
   Equipment::motorStop();
   Equipment::clearLeftEncoderSteps();
@@ -60,24 +58,21 @@ void Equipment::update(unsigned long currentMicros) {
   rightEncoder.update(currentMicros);
 }
 
-void Equipment::motorLeft(int speed)
-{
+void Equipment::motorLeft(int speed) {
   unsigned char direction;
   processSpeedAndDirection(speed, direction);
   leftEncoder.setDirection(direction == DIRF ? POSITIVE : NEGATIVE);
   MOTOR.setSpeedDir1(speed, direction);
 }
 
-void Equipment::motorRight(int speed)
-{
+void Equipment::motorRight(int speed) {
   unsigned char direction;
   processSpeedAndDirection(speed, direction);
   rightEncoder.setDirection(direction == DIRF ? POSITIVE : NEGATIVE);
   MOTOR.setSpeedDir2(speed, direction);
 }
 
-void Equipment::motorBoth(int speed)
-{
+void Equipment::motorBoth(int speed) {
   unsigned char direction;
   processSpeedAndDirection(speed, direction);
   leftEncoder.setDirection(direction == DIRF ? POSITIVE : NEGATIVE);
@@ -86,27 +81,21 @@ void Equipment::motorBoth(int speed)
   MOTOR.setSpeedDir2(speed, direction);
 }
 
-void Equipment::motorStop()
-{
+void Equipment::motorStop() {
   MOTOR.setSpeedDir1(0, DIRF);
   MOTOR.setSpeedDir2(0, DIRF);
 }
 
-void Equipment::processSpeedAndDirection(int &speed, unsigned char &direction)
-{
-  if (speed < 0)
-  {
+void Equipment::processSpeedAndDirection(int &speed, unsigned char &direction) {
+  if (speed < 0) {
     direction = DIRR;
     speed = -speed;
-  }
-  else
-  {
+  } else {
     direction = DIRF;
   }
 }
 
-void Equipment::headlights(bool turnOn)
-{
+void Equipment::headlights(bool turnOn) {
   digitalWrite(Cfg::PIN_HEADLIGHTS, turnOn);
 }
 

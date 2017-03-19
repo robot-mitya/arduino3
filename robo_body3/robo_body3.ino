@@ -17,10 +17,8 @@ void loop() {
   Equipment::update(currentMicros);
 }
 
-void commandHandler(Command command, int param1, int param2, int param3)
-{
-  switch (command)
-  {
+void commandHandler(Command command, int param1, int param2, int param3) {
+  switch (command) {
     case CMD_STATUS_REQUEST:
       Message::send(Message::RET_OK);
       break;
@@ -52,8 +50,7 @@ void commandHandler(Command command, int param1, int param2, int param3)
       Message::sendENCR(Equipment::getRightEncoderSteps());
       break;
     case CMD_ENCB_REQUEST:
-      if (param1 == 1)
-      {
+      if (param1 == 1) {
         Equipment::clearLeftEncoderSteps();
         Equipment::clearRightEncoderSteps();
       }
@@ -106,15 +103,13 @@ void commandHandler(Command command, int param1, int param2, int param3)
   }
 }
 
-char* intToString(int value)
-{
+char* intToString(int value) {
   char result[7];
   itoa(value, result, 10);
   return result;
 }
 
-//void sendEcho(char commandText[25], int param1, int param2, int param3)
-//{
+//void sendEcho(char commandText[25], int param1, int param2, int param3) {
 //  Message::send(commandText);
 //  Message::send(" ");
 //  Message::send(intToString(param1));

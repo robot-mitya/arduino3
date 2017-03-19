@@ -11,10 +11,8 @@
 
 #include <single_pin_encoder.h>
 
-namespace robot_mitya
-{
-  class Equipment
-  {
+namespace robot_mitya {
+  class Equipment {
     public:
       static void initialize();
       static void zero();

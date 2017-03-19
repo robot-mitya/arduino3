@@ -1,8 +1,7 @@
 #ifndef rm_msg_h
 #define rm_msg_h
 
-namespace robot_mitya
-{
+namespace robot_mitya {
   enum Command {
       CMD_UNKNOWN = 0,
       CMD_STATUS_REQUEST = 10,
@@ -24,8 +23,7 @@ namespace robot_mitya
       CMD_MCPS_RESPONSE = 170
   };
   
-  class Message
-  {
+  class Message {
     public:
       static const int RET_OK = 0;
       static const int RET_BAD_PARAMETER = 1;

@@ -15,42 +15,36 @@ static int wordCounter = 0;
 static bool hasError = false;
 static bool inWordSeparator = false;
 
-void Message::initialize()
-{
+void Message::initialize() {
   ROBO_SERIAL.begin(Cfg::SERIAL_BAUD_RATE);
 }
 
-void Message::send(char *message)
-{
+void Message::send(char *message) {
   ROBO_SERIAL.print(message);
 }
 
-void Message::send(int status)
-{
+void Message::send(int status) {
   ROBO_SERIAL.print("!");
   ROBO_SERIAL.print(WORD_SEPARATOR);
   ROBO_SERIAL.print(status);
   ROBO_SERIAL.print(COMMAND_SEPARATOR);
 }
 
-void Message::sendENCL(long steps)
-{
+void Message::sendENCL(long steps) {
   ROBO_SERIAL.print("!ENCL");
   ROBO_SERIAL.print(WORD_SEPARATOR);
   ROBO_SERIAL.print(steps);
   ROBO_SERIAL.print(COMMAND_SEPARATOR);
 }
 
-void Message::sendENCR(long steps)
-{
+void Message::sendENCR(long steps) {
   ROBO_SERIAL.print("!ENCR");
   ROBO_SERIAL.print(WORD_SEPARATOR);
   ROBO_SERIAL.print(steps);
   ROBO_SERIAL.print(COMMAND_SEPARATOR);
 }
 
-void Message::sendDistance(long distanceInMicrons)
-{
+void Message::sendDistance(long distanceInMicrons) {
   long meters = distanceInMicrons / 1000000;
   long millimeters = (distanceInMicrons - meters * 1000000) / 1000;
   ROBO_SERIAL.print("!DIST");
@@ -61,54 +55,41 @@ void Message::sendDistance(long distanceInMicrons)
   ROBO_SERIAL.print(COMMAND_SEPARATOR);
 }
 
-void Message::sendSpeed(int speedInMetersPerHour)
-{
+void Message::sendSpeed(int speedInMetersPerHour) {
   ROBO_SERIAL.print("!SPD");
   ROBO_SERIAL.print(WORD_SEPARATOR);
   ROBO_SERIAL.print(speedInMetersPerHour);
   ROBO_SERIAL.print(COMMAND_SEPARATOR);  
 }
 
-void Message::sendMicronsPerStep(int micronsPerStep)
-{
+void Message::sendMicronsPerStep(int micronsPerStep) {
   ROBO_SERIAL.print("!MCPS");
   ROBO_SERIAL.print(WORD_SEPARATOR);
   ROBO_SERIAL.print(micronsPerStep);
   ROBO_SERIAL.print(COMMAND_SEPARATOR);  
 }
 
-void Message::processInput(void (*handler)(Command, int, int, int))
-{
+void Message::processInput(void (*handler)(Command, int, int, int)) {
   char ch;
   Command command;
   int value1, value2, value3;
-  while (ROBO_SERIAL.available() > 0)
-  {
+  while (ROBO_SERIAL.available() > 0) {
     ch = (char)ROBO_SERIAL.read();
 
-    if (ch == COMMAND_SEPARATOR && handler != NULL)
-    {
-      if (getCommand(commandText, command))
-      {
+    if (ch == COMMAND_SEPARATOR && handler != NULL) {
+      if (getCommand(commandText, command)) {
         if (getParam(param1Text, value1) && 
             getParam(param2Text, value2) && 
-            getParam(param3Text, value3))
-        {
-          if (!hasError)
-          {
-            if (command != CMD_UNKNOWN || value1 != 0 || value2 != 0 || value3 != 0)
-            {
+            getParam(param3Text, value3)) {
+          if (!hasError) {
+            if (command != CMD_UNKNOWN || value1 != 0 || value2 != 0 || value3 != 0) {
               handler(command, value1, value2, value3);
             }
           }
-        }
-        else
-        {
+        } else {
           send(RET_BAD_PARAMETER);
         }
-      }
-      else
-      {
+      } else {
         send(RET_BAD_COMMAND);
       }
       strcpy(commandText, "");
@@ -121,10 +102,9 @@ void Message::processInput(void (*handler)(Command, int, int, int))
       continue;
     }
 
-    if (ch <= 32) //(white space)
-    {
-      if (!inWordSeparator)
-      {
+    //(white space)
+    if (ch <= 32) {
+      if (!inWordSeparator) {
         inWordSeparator = true;
         wordCounter++;
       }
@@ -133,8 +113,7 @@ void Message::processInput(void (*handler)(Command, int, int, int))
 
     inWordSeparator = false;
     charArray[0] = ch;
-    switch (wordCounter)
-    {
+    switch (wordCounter) {
       case 0:
         strcat(commandText, charArray);
         break;
@@ -151,14 +130,11 @@ void Message::processInput(void (*handler)(Command, int, int, int))
         if (!hasError) send(RET_TOO_MANY_WORDS);
         hasError = true;
     }
-  }
-  
+  }  
 }
 
-int Message::charToInt(char ch)
-{
-  switch (ch)
-  {
+int Message::charToInt(char ch) {
+  switch (ch) {
     case '0': return 0;
     case '1': return 1;
     case '2': return 2;
@@ -173,96 +149,77 @@ int Message::charToInt(char ch)
   }
 }
 
-bool Message::getCommand(char *text, Command &command)
-{
+bool Message::getCommand(char *text, Command &command) {
   int length = strlen(text);
-  if (length == 0)
-  {
+  if (length == 0) {
     command = CMD_UNKNOWN;
     return false;
   }
-  if (strcmp(text, "?") == 0)
-  {
+  if (strcmp(text, "?") == 0) {
     command = CMD_STATUS_REQUEST;
     return true;
   }
-  if (strcmp(text, "!") == 0)
-  {
+  if (strcmp(text, "!") == 0) {
     command = CMD_STATUS_RESPONSE;
     return true;
   }
-  if (strcmp(text, "ML") == 0)
-  {
+  if (strcmp(text, "ML") == 0) {
     command = CMD_MOTOR_LEFT;
     return true;
   }
-  if (strcmp(text, "MR") == 0)
-  {
+  if (strcmp(text, "MR") == 0) {
     command = CMD_MOTOR_RIGHT;
     return true;
   }
-  if (strcmp(text, "MB") == 0)
-  {
+  if (strcmp(text, "MB") == 0) {
     command = CMD_MOTOR_BOTH;
     return true;
   }
-  if (strcmp(text, "LED") == 0)
-  {
+  if (strcmp(text, "LED") == 0) {
     command = CMD_LED;
     return true;
   }
-  if (strcmp(text, "?ENCL") == 0)
-  {
+  if (strcmp(text, "?ENCL") == 0) {
     command = CMD_ENCL_REQUEST;
     return true;
   }
-  if (strcmp(text, "?ENCR") == 0)
-  {
+  if (strcmp(text, "?ENCR") == 0) {
     command = CMD_ENCR_REQUEST;
     return true;
   }
-  if (strcmp(text, "?ENCB") == 0)
-  {
+  if (strcmp(text, "?ENCB") == 0) {
     command = CMD_ENCB_REQUEST;
     return true;
   }
-  if (strcmp(text, "!ENCL") == 0)
-  {
+  if (strcmp(text, "!ENCL") == 0) {
     command = CMD_ENCL_RESPONSE;
     return true;
   }
-  if (strcmp(text, "!ENCR") == 0)
-  {
+  if (strcmp(text, "!ENCR") == 0) {
     command = CMD_ENCR_RESPONSE;
     return true;
   }
-  if (strcmp(text, "?DIST") == 0)
-  {
+  if (strcmp(text, "?DIST") == 0) {
     command = CMD_DIST_REQUEST;
     return true;
   }
-  if (strcmp(text, "!DIST") == 0)
-  {
+  if (strcmp(text, "!DIST") == 0) {
     command = CMD_DIST_RESPONSE;
     return true;
   }
-  if (strcmp(text, "?SPD") == 0)
-  {
+  if (strcmp(text, "?SPD") == 0) {
     command = CMD_SPD_REQUEST;
     return true;
   }
-  if (strcmp(text, "!SPD") == 0)
-  {
+  if (strcmp(text, "!SPD") == 0) {
     command = CMD_SPD_RESPONSE;
     return true;
   }
-  if (strcmp(text, "?MCPS") == 0)
-  {
+  if (strcmp(text, "?MCPS") == 0) {
     command = CMD_MCPS_REQUEST;
     return true;
   }
-  if (strcmp(text, "!MCPS") == 0)
-  {
+  if (strcmp(text, "!MCPS") == 0) {
     command = CMD_MCPS_RESPONSE;
     return true;
   }
@@ -270,11 +227,9 @@ bool Message::getCommand(char *text, Command &command)
   return false;
 }
 
-bool Message::getParam(char *text, int &value)
-{
+bool Message::getParam(char *text, int &value) {
   int length = strlen(text);
-  if (length == 0)
-  {
+  if (length == 0) {
     value = 0;
     return true;
   }
@@ -284,11 +239,9 @@ bool Message::getParam(char *text, int &value)
   value = 0;
   int digit;
   int factor = 1;
-  for (int i = last; i >= 0; i--)
-  {
+  for (int i = last; i >= 0; i--) {
     digit = charToInt(text[i]);
-    if (digit < 0)
-    {
+    if (digit < 0) {
       value = 0;
       return false;
     }
