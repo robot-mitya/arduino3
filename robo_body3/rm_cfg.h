@@ -21,7 +21,7 @@ namespace robot_mitya
       // Right encoder pin.
       static const int PIN_RIGHT_ENCODER = 3;
       // One encoder step in micrometers.
-      static const long STEP_MICRONS = 7818;
+      static const long STEP_MICRONS = 7857;
   };
 }
 
