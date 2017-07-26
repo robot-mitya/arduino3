@@ -1,6 +1,12 @@
 #include "rm_cfg.h"
 #include "rm_msg.h"
-#include <HardwareSerial.h>
+
+#if defined(__AVR_ATmega32U4__)
+  // Arduino Leonardo:
+  #include <Arduino.h>
+#else
+  #include <HardwareSerial.h>
+#endif
 
 using namespace robot_mitya;
 
