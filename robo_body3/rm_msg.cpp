@@ -36,6 +36,13 @@ void Message::send(int status) {
   ROBO_SERIAL.print(COMMAND_SEPARATOR);
 }
 
+void Message::sendLED(bool isTurnedOn) {
+  ROBO_SERIAL.print("!LED");
+  ROBO_SERIAL.print(WORD_SEPARATOR);
+  ROBO_SERIAL.print(isTurnedOn ? 1 : 0);
+  ROBO_SERIAL.print(COMMAND_SEPARATOR);
+}
+
 void Message::sendENCL(long steps) {
   ROBO_SERIAL.print("!ENCL");
   ROBO_SERIAL.print(WORD_SEPARATOR);
@@ -183,6 +190,14 @@ bool Message::getCommand(char *text, Command &command) {
   }
   if (strcmp(text, "LED") == 0) {
     command = CMD_LED;
+    return true;
+  }
+  if (strcmp(text, "?LED") == 0) {
+    command = CMD_LED_REQUEST;
+    return true;
+  }
+  if (strcmp(text, "!LED") == 0) {
+    command = CMD_LED_RESPONSE;
     return true;
   }
   if (strcmp(text, "?ENCL") == 0) {

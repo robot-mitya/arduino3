@@ -10,17 +10,19 @@ namespace robot_mitya {
       CMD_MOTOR_RIGHT = 40,
       CMD_MOTOR_BOTH = 50,
       CMD_LED = 60,
-      CMD_ENCL_REQUEST = 70,
-      CMD_ENCR_REQUEST = 80,
-      CMD_ENCB_REQUEST = 90,
-      CMD_ENCL_RESPONSE = 100,
-      CMD_ENCR_RESPONSE = 110,
-      CMD_DIST_REQUEST = 120,
-      CMD_DIST_RESPONSE = 130,
-      CMD_SPD_REQUEST = 140,
-      CMD_SPD_RESPONSE = 150,
-      CMD_MCPS_REQUEST = 160,
-      CMD_MCPS_RESPONSE = 170
+      CMD_LED_REQUEST = 70,
+      CMD_LED_RESPONSE = 80,
+      CMD_ENCL_REQUEST = 90,
+      CMD_ENCR_REQUEST = 100,
+      CMD_ENCB_REQUEST = 110,
+      CMD_ENCL_RESPONSE = 120,
+      CMD_ENCR_RESPONSE = 130,
+      CMD_DIST_REQUEST = 140,
+      CMD_DIST_RESPONSE = 150,
+      CMD_SPD_REQUEST = 160,
+      CMD_SPD_RESPONSE = 170,
+      CMD_MCPS_REQUEST = 180,
+      CMD_MCPS_RESPONSE = 190
   };
   
   class Message {
@@ -34,6 +36,7 @@ namespace robot_mitya {
       static void processInput(void (*handler)(Command, int, int, int));
       static void send(char* message);
       static void send(int status);
+      static void sendLED(bool isTurnedOn);
       static void sendENCL(long steps);
       static void sendENCR(long steps);
       static void sendDistance(long distanceInMicrons);

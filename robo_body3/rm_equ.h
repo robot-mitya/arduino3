@@ -24,6 +24,7 @@ namespace robot_mitya {
       static void motorStop();
 
       static void headlights(bool turnOn);
+      static bool getHeadlights();
 
       static void updateMicronsPerEncoderStep(int micronsPerStep);
 

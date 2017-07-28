@@ -39,6 +39,9 @@ void commandHandler(Command command, int param1, int param2, int param3) {
     case CMD_LED:
       Equipment::headlights(param1 != 0);
       break;
+    case CMD_LED_REQUEST:
+      Message::sendLED(Equipment::getHeadlights());
+      break;
     case CMD_ENCL_REQUEST:
       if (param1 == 1)
         Equipment::clearLeftEncoderSteps();

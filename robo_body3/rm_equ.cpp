@@ -99,6 +99,10 @@ void Equipment::headlights(bool turnOn) {
   digitalWrite(Cfg::PIN_HEADLIGHTS, turnOn);
 }
 
+bool Equipment::getHeadlights() {
+  return digitalRead(Cfg::PIN_HEADLIGHTS) == HIGH;
+}
+
 void Equipment::updateMicronsPerEncoderStep(int micronsPerStep) {
   micronsPerEncoderStep = micronsPerStep;
 }
