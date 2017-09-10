@@ -89,6 +89,10 @@ void Message::processInput(void (*handler)(Command, int, int, int)) {
   while (ROBO_SERIAL.available() > 0) {
     ch = (char)ROBO_SERIAL.read();
 
+    if (ch == '\n' || ch == '\r') {
+      continue;
+    }
+
     if (ch == COMMAND_SEPARATOR && handler != NULL) {
       if (getCommand(commandText, command)) {
         if (getParam(param1Text, value1) && 
