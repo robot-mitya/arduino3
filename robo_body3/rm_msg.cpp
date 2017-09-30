@@ -12,7 +12,7 @@ using namespace robot_mitya;
 
 #define ROBO_SERIAL Serial
 
-static char charArray[2] = "\0\0";
+static char charArray[2] = "\0"; // + null terminating (2 chars)
 static char commandText[11] = "";
 static char param1Text[7] = "";
 static char param2Text[7] = "";

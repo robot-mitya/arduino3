@@ -107,7 +107,7 @@ void commandHandler(Command command, int param1, int param2, int param3) {
 }
 
 char* intToString(int value) {
-  char result[7];
+  static char result[7];
   itoa(value, result, 10);
   return result;
 }
