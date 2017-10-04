@@ -43,6 +43,16 @@ void Message::sendLED(bool isTurnedOn) {
   ROBO_SERIAL.print(COMMAND_SEPARATOR);
 }
 
+void Message::sendLEDA(int brightness) {
+  ROBO_SERIAL.print("!LEDA");
+  ROBO_SERIAL.print(WORD_SEPARATOR);
+  if (brightness < 0) brightness = 0;
+  else if (brightness > 255) brightness = 255;
+  ROBO_SERIAL.print(brightness);
+  ROBO_SERIAL.print(COMMAND_SEPARATOR);
+}
+
+
 void Message::sendENCL(long steps) {
   ROBO_SERIAL.print("!ENCL");
   ROBO_SERIAL.print(WORD_SEPARATOR);
@@ -75,10 +85,38 @@ void Message::sendSpeed(int speedInMetersPerHour) {
   ROBO_SERIAL.print(COMMAND_SEPARATOR);  
 }
 
+void Message::sendBatteryVoltage(int batteryVoltage) {
+  ROBO_SERIAL.print("!BV");
+  ROBO_SERIAL.print(WORD_SEPARATOR);
+  ROBO_SERIAL.print(batteryVoltage);
+  ROBO_SERIAL.print(COMMAND_SEPARATOR);  
+}
+
+void Message::sendDcDcVoltage(int dcDcVoltage) {
+  ROBO_SERIAL.print("!DV");
+  ROBO_SERIAL.print(WORD_SEPARATOR);
+  ROBO_SERIAL.print(dcDcVoltage);
+  ROBO_SERIAL.print(COMMAND_SEPARATOR);  
+}
+
 void Message::sendMicronsPerStep(int micronsPerStep) {
   ROBO_SERIAL.print("!MCPS");
   ROBO_SERIAL.print(WORD_SEPARATOR);
   ROBO_SERIAL.print(micronsPerStep);
+  ROBO_SERIAL.print(COMMAND_SEPARATOR);  
+}
+
+void Message::sendBatteryVoltageFactor(long batteryVoltageFactor) {
+  ROBO_SERIAL.print("!BVF");
+  ROBO_SERIAL.print(WORD_SEPARATOR);
+  ROBO_SERIAL.print(batteryVoltageFactor);
+  ROBO_SERIAL.print(COMMAND_SEPARATOR);  
+}
+
+void Message::sendDcDcVoltageFactor(long dcDcVoltageFactor) {
+  ROBO_SERIAL.print("!DVF");
+  ROBO_SERIAL.print(WORD_SEPARATOR);
+  ROBO_SERIAL.print(dcDcVoltageFactor);
   ROBO_SERIAL.print(COMMAND_SEPARATOR);  
 }
 
@@ -204,6 +242,18 @@ bool Message::getCommand(char *text, Command &command) {
     command = CMD_LED_RESPONSE;
     return true;
   }
+  if (strcmp(text, "LEDA") == 0) {
+    command = CMD_LEDA;
+    return true;
+  }
+  if (strcmp(text, "?LEDA") == 0) {
+    command = CMD_LEDA_REQUEST;
+    return true;
+  }
+  if (strcmp(text, "!LEDA") == 0) {
+    command = CMD_LEDA_RESPONSE;
+    return true;
+  }  
   if (strcmp(text, "?ENCL") == 0) {
     command = CMD_ENCL_REQUEST;
     return true;
@@ -240,12 +290,44 @@ bool Message::getCommand(char *text, Command &command) {
     command = CMD_SPD_RESPONSE;
     return true;
   }
+  if (strcmp(text, "?BV") == 0) {
+    command = CMD_BV_REQUEST;
+    return true;
+  }
+  if (strcmp(text, "!BV") == 0) {
+    command = CMD_BV_RESPONSE;
+    return true;
+  }
+  if (strcmp(text, "?DV") == 0) {
+    command = CMD_DV_REQUEST;
+    return true;
+  }
+  if (strcmp(text, "!DV") == 0) {
+    command = CMD_DV_RESPONSE;
+    return true;
+  }
   if (strcmp(text, "?MCPS") == 0) {
     command = CMD_MCPS_REQUEST;
     return true;
   }
   if (strcmp(text, "!MCPS") == 0) {
     command = CMD_MCPS_RESPONSE;
+    return true;
+  }
+  if (strcmp(text, "?BVF") == 0) {
+    command = CMD_BVF_REQUEST;
+    return true;
+  }
+  if (strcmp(text, "!BVF") == 0) {
+    command = CMD_BVF_RESPONSE;
+    return true;
+  }  
+  if (strcmp(text, "?DVF") == 0) {
+    command = CMD_DVF_REQUEST;
+    return true;
+  }
+  if (strcmp(text, "!DVF") == 0) {
+    command = CMD_DVF_RESPONSE;
     return true;
   }
   command = CMD_UNKNOWN;

@@ -37,10 +37,16 @@ void commandHandler(Command command, int param1, int param2, int param3) {
       Equipment::motorBoth(param1);
       break;
     case CMD_LED:
-      Equipment::headlights(param1 != 0);
+      Equipment::led(param1 != 0);
       break;
     case CMD_LED_REQUEST:
-      Message::sendLED(Equipment::getHeadlights());
+      Message::sendLED(Equipment::getLed());
+      break;
+    case CMD_LEDA:
+      Equipment::leda(param1);
+      break;
+    case CMD_LEDA_REQUEST:
+      Message::sendLEDA(Equipment::getLeda());
       break;
     case CMD_ENCL_REQUEST:
       if (param1 == 1)
@@ -89,6 +95,32 @@ void commandHandler(Command command, int param1, int param2, int param3) {
         Message::send(Message::RET_BAD_PARAMETER);
       }
       break;
+    case CMD_BV_REQUEST:
+      if (param1 == -1) {
+        Equipment::clearBatteryVoltageHandler();
+        Message::send(Message::RET_OK);
+      } else if (param1 == 0) {
+        Message::sendBatteryVoltage(Equipment::getBatteryVoltage());
+      } else if (param1 > 0) {
+        Equipment::setBatteryVoltageHandler(param1);
+        Message::send(Message::RET_OK);
+      } else {
+        Message::send(Message::RET_BAD_PARAMETER);
+      }
+      break;
+    case CMD_DV_REQUEST:
+      if (param1 == -1) {
+        Equipment::clearDcDcVoltageHandler();
+        Message::send(Message::RET_OK);
+      } else if (param1 == 0) {
+        Message::sendDcDcVoltage(Equipment::getDcDcVoltage());
+      } else if (param1 > 0) {
+        Equipment::setDcDcVoltageHandler(param1);
+        Message::send(Message::RET_OK);
+      } else {
+        Message::send(Message::RET_BAD_PARAMETER);
+      }
+      break;
     case CMD_MCPS_REQUEST:
       if (param1 < 0) {
         Message::send(Message::RET_BAD_PARAMETER);
@@ -99,6 +131,30 @@ void commandHandler(Command command, int param1, int param2, int param3) {
         int micronsPerStep = Eeprom::readMicronsPerEncoderStep();
         Equipment::updateMicronsPerEncoderStep(micronsPerStep);
         Message::sendMicronsPerStep(micronsPerStep);
+      }
+      break;
+    case CMD_BVF_REQUEST:
+      if (param1 < 0) {
+        Message::send(Message::RET_BAD_PARAMETER);
+      } else {
+        if (param1 > 0) {
+          Eeprom::writeBatteryVoltageFactor(param1);
+        }
+        long batteryVoltageFactor = Eeprom::readBatteryVoltageFactor();
+        Equipment::updateBatteryVoltageFactor(batteryVoltageFactor);
+        Message::sendBatteryVoltageFactor(batteryVoltageFactor);
+      }
+      break;
+    case CMD_DVF_REQUEST:
+      if (param1 < 0) {
+        Message::send(Message::RET_BAD_PARAMETER);
+      } else {
+        if (param1 > 0) {
+          Eeprom::writeDcDcVoltageFactor(param1);
+        }
+        long dcDcVoltageFactor = Eeprom::readDcDcVoltageFactor();
+        Equipment::updateDcDcVoltageFactor(dcDcVoltageFactor);
+        Message::sendDcDcVoltageFactor(dcDcVoltageFactor);
       }
       break;
     default:

@@ -7,8 +7,10 @@
 
 using namespace robot_mitya;
 
-SinglePinEncoder leftEncoder(Cfg::PIN_LEFT_ENCODER);
-SinglePinEncoder rightEncoder(Cfg::PIN_RIGHT_ENCODER);
+static SinglePinEncoder leftEncoder(Cfg::PIN_LEFT_ENCODER);
+static SinglePinEncoder rightEncoder(Cfg::PIN_RIGHT_ENCODER);
+
+static int ledaBrightness;
 
 static long micronsPerEncoderStep;
 
@@ -21,11 +23,22 @@ static long rightEncoderSpeedInMetersPerHour;
 static int speedHandlerPeriodInMillis;
 static bool waitingSpeedData;
 
+static long batteryVoltageFactor;
+static long dcDcVoltageFactor;
+
+static TimerHelper batteryVoltageTimerHelper;
+static TimerHelper dcDcVoltageTimerHelper;
+
 void Equipment::initialize() {
-  pinMode(Cfg::PIN_HEADLIGHTS, OUTPUT);
+  pinMode(Cfg::PIN_LED, OUTPUT);
+  pinMode(Cfg::PIN_LED_PWM, OUTPUT);
   MOTOR.init();
+  pinMode(Cfg::PIN_BATTERY_VOLTAGE, INPUT);
+  pinMode(Cfg::PIN_DC_DC_VOLTAGE, INPUT);
 
   micronsPerEncoderStep = Eeprom::readMicronsPerEncoderStep();
+  batteryVoltageFactor = Eeprom::readBatteryVoltageFactor();
+  dcDcVoltageFactor = Eeprom::readDcDcVoltageFactor();
 
   // "Prewarm" encoders' pins. First pin reading contain garbage data.
   // Before regular use of Equipment::update we simulate it for 0.5 sec
@@ -41,7 +54,8 @@ void Equipment::initialize() {
 }
 
 void Equipment::zero() {
-  Equipment::headlights(false);
+  Equipment::led(false);
+  Equipment::leda(0);
   Equipment::motorStop();
   Equipment::clearLeftEncoderSteps();
   Equipment::clearRightEncoderSteps();
@@ -56,6 +70,9 @@ void Equipment::update(unsigned long currentMicros) {
   // Fisrt leftEncoder.update, then rightEncoder.update:
   leftEncoder.update(currentMicros);
   rightEncoder.update(currentMicros);
+
+  batteryVoltageTimerHelper.update(currentMicros);
+  dcDcVoltageTimerHelper.update(currentMicros);
 }
 
 void Equipment::motorLeft(int speed) {
@@ -95,12 +112,23 @@ void Equipment::processSpeedAndDirection(int &speed, unsigned char &direction) {
   }
 }
 
-void Equipment::headlights(bool turnOn) {
-  digitalWrite(Cfg::PIN_HEADLIGHTS, turnOn);
+void Equipment::led(bool turnOn) {
+  digitalWrite(Cfg::PIN_LED, turnOn);
 }
 
-bool Equipment::getHeadlights() {
-  return digitalRead(Cfg::PIN_HEADLIGHTS) == HIGH;
+bool Equipment::getLed() {
+  return digitalRead(Cfg::PIN_LED) == HIGH;
+}
+
+void Equipment::leda(int brightness) {
+  if (brightness < 0) brightness = 0;
+  else if (brightness > 255) brightness = 255;
+  analogWrite(Cfg::PIN_LED_PWM, brightness);
+  ledaBrightness = brightness;
+}
+
+int Equipment::getLeda() {
+  return ledaBrightness;
 }
 
 void Equipment::updateMicronsPerEncoderStep(int micronsPerStep) {
@@ -216,5 +244,51 @@ void Equipment::setSpeedHandler(unsigned long periodInMillis) {
   
   leftEncoder.setSpeedHandler(Equipment::leftEncoderSpeedHandler);
   rightEncoder.setSpeedHandler(Equipment::rightEncoderSpeedHandler);
+}
+
+int Equipment::getBatteryVoltage() {
+  long voltage = analogRead(Cfg::PIN_BATTERY_VOLTAGE);
+  voltage = voltage * batteryVoltageFactor / 1000;
+  return (int) voltage;
+}
+
+void Equipment::clearBatteryVoltageHandler() {
+  batteryVoltageTimerHelper.clearHandler();
+}
+
+void Equipment::setBatteryVoltageHandler(unsigned long periodInMillis) {
+  batteryVoltageTimerHelper.setHandler(batteryVoltageHandler);
+  batteryVoltageTimerHelper.setHandlerPeriod(periodInMillis * 1000);
+}
+
+void Equipment::batteryVoltageHandler(unsigned long phase1000) {
+  Message::sendBatteryVoltage(Equipment::getBatteryVoltage());
+}
+
+int Equipment::getDcDcVoltage() {
+  long voltage = analogRead(Cfg::PIN_DC_DC_VOLTAGE);
+  voltage = voltage * dcDcVoltageFactor / 1000;
+  return (int) voltage;
+}
+
+void Equipment::clearDcDcVoltageHandler() {
+  dcDcVoltageTimerHelper.clearHandler();
+}
+
+void Equipment::setDcDcVoltageHandler(unsigned long periodInMillis) {
+  dcDcVoltageTimerHelper.setHandler(dcDcVoltageHandler);
+  dcDcVoltageTimerHelper.setHandlerPeriod(periodInMillis * 1000);
+}
+
+void Equipment::dcDcVoltageHandler(unsigned long phase1000) {
+  Message::sendDcDcVoltage(Equipment::getDcDcVoltage());
+}
+
+void Equipment::updateBatteryVoltageFactor(long factor) {
+  batteryVoltageFactor = factor;
+}
+
+void Equipment::updateDcDcVoltageFactor(long factor) {
+  dcDcVoltageFactor = factor;
 }
 
