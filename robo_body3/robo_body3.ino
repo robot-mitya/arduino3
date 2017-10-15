@@ -36,6 +36,21 @@ void commandHandler(Command command, int param1, int param2, int param3) {
       //sendEcho("!MB", param1, param2, param3);
       Equipment::motorBoth(param1);
       break;
+    case CMD_TAIL_ROTATE:
+      if (!Equipment::tailRotate(param1, param2))
+        Message::send(Message::RET_BAD_PARAMETER);
+      break;
+    case CMD_TAIL_SWING:
+      if (!Equipment::tailSwing(param1, param2, param3))
+        Message::send(Message::RET_BAD_PARAMETER);
+      break;
+    case CMD_TAIL_SWING_A:
+      if (!Equipment::tailSwingDown(param1, param2, param3))
+        Message::send(Message::RET_BAD_PARAMETER);
+      break;
+    case CMD_TAIL_FREEZE:
+      Equipment::tailFreeze();
+      break;
     case CMD_LED:
       Equipment::led(param1 != 0);
       break;

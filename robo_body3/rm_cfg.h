@@ -15,6 +15,8 @@ namespace robot_mitya {
     public:
       // Baud rate of the controller-PC serial link.
       static const int SERIAL_BAUD_RATE = 9600;
+      // Tail servo pin.
+      static const int PIN_TAIL = 12;
       // Headlights pins.
       static const int PIN_LED = 13;
       static const int PIN_LED_PWM = 11;

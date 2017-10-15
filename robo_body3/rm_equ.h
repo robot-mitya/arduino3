@@ -10,7 +10,7 @@
 #define rm_equ_h
 
 #include <single_pin_encoder.h>
-#include "rm_timer.h"
+//#include "rm_timer.h"
 
 namespace robot_mitya {
   class Equipment {
@@ -23,6 +23,11 @@ namespace robot_mitya {
       static void motorRight(int speed);//speed: -100..+100
       static void motorBoth(int speed); //speed: -100..+100
       static void motorStop();
+
+      static bool tailRotate(int degree, int speed); //degree: -90..+90, speed: degree per second
+      static bool tailSwing(int period, int amplitude, int halfperiods); // period in millis, amplitude in degrees
+      static bool tailSwingDown(int period, int amplitude, int halfperiods); // period in millis, amplitude in degrees
+      static void tailFreeze();
 
       static void led(bool turnOn);
       static bool getLed();

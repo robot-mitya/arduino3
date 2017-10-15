@@ -230,6 +230,22 @@ bool Message::getCommand(char *text, Command &command) {
     command = CMD_MOTOR_BOTH;
     return true;
   }
+  if (strcmp(text, "TLR") == 0) {
+    command = CMD_TAIL_ROTATE;
+    return true;
+  }
+  if (strcmp(text, "TLS") == 0) {
+    command = CMD_TAIL_SWING;
+    return true;
+  }
+  if (strcmp(text, "TLSA") == 0) {
+    command = CMD_TAIL_SWING_A;
+    return true;
+  }
+  if (strcmp(text, "TLF") == 0) {
+    command = CMD_TAIL_FREEZE;
+    return true;
+  }
   if (strcmp(text, "LED") == 0) {
     command = CMD_LED;
     return true;

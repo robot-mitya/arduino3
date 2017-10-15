@@ -1,9 +1,12 @@
+#include <Arduino.h>
+
 #include "rm_cfg.h"
 #include "rm_equ.h"
 #include "rm_msg.h"
 #include "rm_eeprom.h"
 #include "motordriver_4wd.h"
-#include <Arduino.h>
+#include "rm_timer.h"
+#include "rm_tail.h"
 
 using namespace robot_mitya;
 
@@ -28,6 +31,8 @@ static long dcDcVoltageFactor;
 
 static TimerHelper batteryVoltageTimerHelper;
 static TimerHelper dcDcVoltageTimerHelper;
+
+static Tail tail(Cfg::PIN_TAIL);
 
 void Equipment::initialize() {
   pinMode(Cfg::PIN_LED, OUTPUT);
@@ -57,6 +62,7 @@ void Equipment::zero() {
   Equipment::led(false);
   Equipment::leda(0);
   Equipment::motorStop();
+  Equipment::tailRotate(0, 0);
   Equipment::clearLeftEncoderSteps();
   Equipment::clearRightEncoderSteps();
   Equipment::clearStepsHandler();
@@ -73,6 +79,8 @@ void Equipment::update(unsigned long currentMicros) {
 
   batteryVoltageTimerHelper.update(currentMicros);
   dcDcVoltageTimerHelper.update(currentMicros);
+
+  tail.update(currentMicros);
 }
 
 void Equipment::motorLeft(int speed) {
@@ -101,6 +109,22 @@ void Equipment::motorBoth(int speed) {
 void Equipment::motorStop() {
   MOTOR.setSpeedDir1(0, DIRF);
   MOTOR.setSpeedDir2(0, DIRF);
+}
+
+bool Equipment::tailRotate(int degree, int speed) {
+  return tail.rotate(degree + 90, speed);
+}
+
+bool Equipment::tailSwing(int period, int amplitude, int halfperiods) {
+  return tail.swing(period, amplitude, halfperiods);
+}
+
+bool Equipment::tailSwingDown(int period, int amplitude, int halfperiods) {
+  return tail.swingDown(period, amplitude, halfperiods);
+}
+
+void Equipment::tailFreeze() {
+  tail.stop();
 }
 
 void Equipment::processSpeedAndDirection(int &speed, unsigned char &direction) {
