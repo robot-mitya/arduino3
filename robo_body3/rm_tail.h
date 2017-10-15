@@ -45,7 +45,6 @@ namespace robot_mitya {
       Swing(int startDegree, int amplitude, unsigned long period, int halfperiods);
       int getDegree(unsigned long currentMicros);
       bool isFinished() { return completed; }
-      //bool isFinished() { return (totalDuration != 0) && completed; }
     protected:
       int startDegree;
       int amplitude;
@@ -69,7 +68,6 @@ namespace robot_mitya {
       void update(unsigned long currentMicros);
       bool isIdle() { return command == NULL; }
       void stop();
-      void toStartPosition();
       bool rotate(int degree, int speed); //speed in degrees per second
       bool swing(int period, int amplitude, int halfperiods); //period in millis, amplitude in degrees
       bool swingDown(int period, int startAmplitude, int halfperiods); //period in millis, amplitude in degrees

@@ -24,6 +24,9 @@ void commandHandler(Command command, int param1, int param2, int param3) {
       break;
     case CMD_STATUS_RESPONSE:
       break;
+    case CMD_RESET:
+      Equipment::rebootController();
+      break;
     case CMD_MOTOR_LEFT:
       //sendEcho("!ML", param1, param2, param3);
       Equipment::motorLeft(param1);

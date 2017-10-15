@@ -218,6 +218,10 @@ bool Message::getCommand(char *text, Command &command) {
     command = CMD_STATUS_RESPONSE;
     return true;
   }
+  if (strcmp(text, "RST") == 0) {
+    command = CMD_RESET;
+    return true;
+  }
   if (strcmp(text, "ML") == 0) {
     command = CMD_MOTOR_LEFT;
     return true;

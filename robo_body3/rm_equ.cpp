@@ -83,6 +83,11 @@ void Equipment::update(unsigned long currentMicros) {
   tail.update(currentMicros);
 }
 
+void Equipment::rebootController() {
+  void (*softReboot)(void) = 0;
+  softReboot();  
+}
+
 void Equipment::motorLeft(int speed) {
   unsigned char direction;
   processSpeedAndDirection(speed, direction);

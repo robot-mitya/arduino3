@@ -19,6 +19,8 @@ namespace robot_mitya {
       static void zero();
       static void update(unsigned long currentMicros);
 
+      static void rebootController();
+
       static void motorLeft(int speed); //speed: -100..+100
       static void motorRight(int speed);//speed: -100..+100
       static void motorBoth(int speed); //speed: -100..+100

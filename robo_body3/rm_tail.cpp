@@ -16,12 +16,6 @@ Tail::~Tail() {
   detach();
 }
 
-void Tail::toStartPosition() {
-  attach();
-  currentDegree = MID_DEGREE;
-  servo.write(currentDegree);
-}
-
 void Tail::detach() {
   if (isAttached) {
     servo.detach();
@@ -30,9 +24,7 @@ void Tail::detach() {
 }
 
 void Tail::attach() {
-//Serial.println("attaching1");
   if (isAttached) return;
-//Serial.println("attaching2");
   servo.attach(pin);
   isAttached = true;
 }
@@ -42,37 +34,28 @@ void Tail::stop() {
   attach();
   delete command;
   command = NULL;
-  previousCommand = NULL;
   servo.write(currentDegree);
 }
 
 bool Tail::rotate(int degree, int speed) {
+  stop();
+
   if (degree < MIN_DEGREE) degree = MIN_DEGREE;
   else if (degree > MAX_DEGREE) degree = MAX_DEGREE;
   if (speed < 0) return false;
-  attach();
-  if (speed == 0) {
-    delete command;
-    command = NULL;
-    previousCommand = NULL;
-    currentDegree = degree;
-//Serial.print("degree=");
-//Serial.println(degree);
-//Serial.print("isAttached=");
-//Serial.println(isAttached);
-    servo.write(degree);
-    return true;
-  }
 
+  attach();
   command = new Rotate(currentDegree, degree, speed);
   return true;
 }
 
 bool Tail::swing(int period, int amplitude, int halfperiods) {
-  if (period < 0)
+  stop();
+  
+  if (period < 0 || halfperiods < 0)
     return false;
+  
   if (period == 0) {
-    stop();
     return true;
   }
 
@@ -81,19 +64,18 @@ bool Tail::swing(int period, int amplitude, int halfperiods) {
   if (amplitude < a) a = amplitude;
   amplitude = a;
 
-  if (halfperiods < 0)
-    return false;
-
   attach();
   command = new Swing(currentDegree, amplitude, period, halfperiods);
   return true;  
 }
 
 bool Tail::swingDown(int period, int startAmplitude, int halfperiods) {
-  if (period < 0)
+  stop();
+
+  if (period < 0 || halfperiods < 0)
     return false;
+
   if (period == 0) {
-    stop();
     return true;
   }
 
@@ -101,9 +83,6 @@ bool Tail::swingDown(int period, int startAmplitude, int halfperiods) {
   if (MAX_DEGREE - currentDegree < a) a = MAX_DEGREE - currentDegree;
   if (startAmplitude < a) a = startAmplitude;
   startAmplitude = a;
-
-  if (halfperiods < 0)
-    return false;
 
   attach();
   command = new SwingDown(currentDegree, startAmplitude, period, halfperiods);
@@ -115,25 +94,23 @@ void Tail::update() {
 }
 
 void Tail::update(unsigned long currentMicros) {
-  if (command == NULL) {
-    if (isAttached && (currentMicros - finishCommandMicros > DETACH_TIMEOUT_MICROS)) {
-      detach();
-    }
-    return;
-  }
-  if (previousCommand == NULL) { //(first moving iteration)
+  if (command != NULL && previousCommand == NULL) { //(first moving iteration)
     command->setStartMicros(currentMicros);
-    previousCommand = command;
   }
-
-  currentDegree = command->getDegree(currentMicros);
-  servo.write(currentDegree);
-
-  if (command->isFinished()) {
+  if (command == NULL && previousCommand != NULL) {
     finishCommandMicros = currentMicros;
-    delete command;
-    command = NULL;
-    previousCommand = NULL;
+  }
+  previousCommand = command;
+
+  if (command != NULL) {
+    currentDegree = command->getDegree(currentMicros);
+    servo.write(currentDegree);
+    if (command->isFinished()) {
+      delete command;
+      command = NULL;
+    }
+  } else if (isAttached && (currentMicros - finishCommandMicros > DETACH_TIMEOUT_MICROS)) {
+    detach();
   }
 }
 
@@ -141,13 +118,21 @@ Rotate::Rotate(int startDegree, int stopDegree, int speed) {
   this->startDegree = startDegree;
   this->stopDegree = stopDegree;
   completed = false;
-  
-  int deltaDegree = stopDegree - startDegree;
-  if (deltaDegree < 0) deltaDegree = -deltaDegree;
-  totalDuration = deltaDegree * 1000L / speed;
+
+  if (speed == 0) {
+    totalDuration = 0;
+  } else {
+    int deltaDegree = stopDegree - startDegree;
+    if (deltaDegree < 0) deltaDegree = -deltaDegree;
+    totalDuration = deltaDegree * 1000L / speed;
+  }
 }
 
 int Rotate::getDegree(unsigned long currentMicros) {
+  if (totalDuration == 0) {
+    completed = true;
+    return stopDegree;
+  }
   unsigned long factor = (currentMicros - startMicros) / totalDuration;
   completed = factor > 1000L;
   if (completed) {
