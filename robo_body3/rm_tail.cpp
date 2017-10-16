@@ -3,10 +3,12 @@
 
 using namespace robot_mitya;
 
+static unsigned long commandCounter = 0;
+
 Tail::Tail(int pin) {
   this->pin = pin;
   command = NULL;
-  previousCommand = NULL;
+  previousCommandId = 0;
   finishCommandMicros = 0;
   currentDegree = MID_DEGREE;
   isAttached = false;
@@ -94,13 +96,13 @@ void Tail::update() {
 }
 
 void Tail::update(unsigned long currentMicros) {
-  if (command != NULL && previousCommand == NULL) { //(first moving iteration)
+  if (command != NULL && command->id != previousCommandId) { //(first command iteration)
     command->setStartMicros(currentMicros);
   }
-  if (command == NULL && previousCommand != NULL) {
+  if (command == NULL && previousCommandId != 0) {
     finishCommandMicros = currentMicros;
   }
-  previousCommand = command;
+  previousCommandId = command == NULL ? 0 : command->id;
 
   if (command != NULL) {
     currentDegree = command->getDegree(currentMicros);
@@ -112,6 +114,11 @@ void Tail::update(unsigned long currentMicros) {
   } else if (isAttached && (currentMicros - finishCommandMicros > DETACH_TIMEOUT_MICROS)) {
     detach();
   }
+}
+
+
+ServoCommand::ServoCommand() {
+  id = ++commandCounter;
 }
 
 Rotate::Rotate(int startDegree, int stopDegree, int speed) {

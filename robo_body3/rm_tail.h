@@ -21,6 +21,8 @@ namespace robot_mitya {
   
   class ServoCommand {
     public:
+      unsigned long id;
+      ServoCommand();
       virtual int getDegree(unsigned long currentMicros) = 0;
       virtual bool isFinished() = 0;
       void setStartMicros(unsigned long startMicros) { this->startMicros = startMicros; }
@@ -75,7 +77,7 @@ namespace robot_mitya {
       Servo servo;
       int pin;
       ServoCommand *command;
-      ServoCommand *previousCommand;
+      unsigned long previousCommandId;
       int currentDegree;
       bool isAttached;
       unsigned long finishCommandMicros;
