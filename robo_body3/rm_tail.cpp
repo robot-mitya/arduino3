@@ -36,7 +36,7 @@ void Tail::stop() {
   attach();
   delete command;
   command = NULL;
-  servo.write(currentDegree);
+  servoWrite(currentDegree);
 }
 
 bool Tail::rotate(int degree, int speed) {
@@ -106,7 +106,7 @@ void Tail::update(unsigned long currentMicros) {
 
   if (command != NULL) {
     currentDegree = command->getDegree(currentMicros);
-    servo.write(currentDegree);
+    servoWrite(currentDegree);
     if (command->isFinished()) {
       delete command;
       command = NULL;
@@ -114,6 +114,11 @@ void Tail::update(unsigned long currentMicros) {
   } else if (isAttached && (currentMicros - finishCommandMicros > DETACH_TIMEOUT_MICROS)) {
     detach();
   }
+}
+
+void Tail::servoWrite(int degree) {
+  // Optimized for performance. See constants MIN_PULSE_WIDTH and MAX_PULSE_WIDTH in ServoTimer2.h
+  servo.write(750 + 150 * degree / 18);
 }
 
 

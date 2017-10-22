@@ -8,7 +8,8 @@
 #ifndef rm_tail_h
 #define rm_tail_h
 
-#include <Servo.h>
+#include <ServoTimer2.h>
+//#include <SoftwareServo.h>
 
 namespace robot_mitya {
 
@@ -74,7 +75,7 @@ namespace robot_mitya {
       bool swing(int period, int amplitude, int halfperiods); //period in millis, amplitude in degrees
       bool swingDown(int period, int startAmplitude, int halfperiods); //period in millis, amplitude in degrees
     private:
-      Servo servo;
+      ServoTimer2 servo;
       int pin;
       ServoCommand *command;
       unsigned long previousCommandId;
@@ -83,6 +84,7 @@ namespace robot_mitya {
       unsigned long finishCommandMicros;
       void attach();
       void detach();
+      void servoWrite(int degree);
   };
 }
 

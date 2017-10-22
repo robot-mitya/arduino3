@@ -35,8 +35,8 @@ static TimerHelper dcDcVoltageTimerHelper;
 static Tail tail(Cfg::PIN_TAIL);
 
 void Equipment::initialize() {
-  pinMode(Cfg::PIN_LED, OUTPUT);
-  pinMode(Cfg::PIN_LED_PWM, OUTPUT);
+  pinMode(Cfg::PIN_LED_1, OUTPUT);
+  pinMode(Cfg::PIN_LED_2, OUTPUT);
   MOTOR.init();
   pinMode(Cfg::PIN_BATTERY_VOLTAGE, INPUT);
   pinMode(Cfg::PIN_DC_DC_VOLTAGE, INPUT);
@@ -59,8 +59,8 @@ void Equipment::initialize() {
 }
 
 void Equipment::zero() {
-  Equipment::led(false);
-  Equipment::leda(0);
+  Equipment::led1(false);
+  Equipment::led2(false);
   Equipment::motorStop();
   Equipment::tailRotate(0, 0);
   Equipment::clearLeftEncoderSteps();
@@ -141,23 +141,20 @@ void Equipment::processSpeedAndDirection(int &speed, unsigned char &direction) {
   }
 }
 
-void Equipment::led(bool turnOn) {
-  digitalWrite(Cfg::PIN_LED, turnOn);
+void Equipment::led1(bool turnOn) {
+  digitalWrite(Cfg::PIN_LED_1, turnOn);
 }
 
-bool Equipment::getLed() {
-  return digitalRead(Cfg::PIN_LED) == HIGH;
+bool Equipment::getLed1() {
+  return digitalRead(Cfg::PIN_LED_1) == HIGH;
 }
 
-void Equipment::leda(int brightness) {
-  if (brightness < 0) brightness = 0;
-  else if (brightness > 255) brightness = 255;
-  analogWrite(Cfg::PIN_LED_PWM, brightness);
-  ledaBrightness = brightness;
+void Equipment::led2(bool turnOn) {
+  digitalWrite(Cfg::PIN_LED_2, turnOn);
 }
 
-int Equipment::getLeda() {
-  return ledaBrightness;
+bool Equipment::getLed2() {
+  return digitalRead(Cfg::PIN_LED_2) == HIGH;
 }
 
 void Equipment::updateMicronsPerEncoderStep(int micronsPerStep) {

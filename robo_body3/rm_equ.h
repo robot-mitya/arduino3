@@ -31,10 +31,10 @@ namespace robot_mitya {
       static bool tailSwingDown(int period, int amplitude, int halfperiods); // period in millis, amplitude in degrees
       static void tailFreeze();
 
-      static void led(bool turnOn);
-      static bool getLed();
-      static void leda(int brightness);
-      static int getLeda();
+      static void led1(bool turnOn);
+      static bool getLed1();
+      static void led2(bool turnOn);
+      static bool getLed2();
 
       static void updateMicronsPerEncoderStep(int micronsPerStep);
 

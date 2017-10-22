@@ -18,8 +18,8 @@ namespace robot_mitya {
       // Tail servo pin.
       static const int PIN_TAIL = 12;
       // Headlights pins.
-      static const int PIN_LED = 13;
-      static const int PIN_LED_PWM = 11;
+      static const int PIN_LED_1 = 13;
+      static const int PIN_LED_2 = 11;
       // Left encoder pin.
       static const int PIN_LEFT_ENCODER = 2;
       // Right encoder pin.

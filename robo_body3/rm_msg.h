@@ -14,12 +14,12 @@ namespace robot_mitya {
       CMD_TAIL_SWING = 80,
       CMD_TAIL_SWING_A = 90,
       CMD_TAIL_FREEZE = 100,
-      CMD_LED = 110,
-      CMD_LED_REQUEST = 120,
-      CMD_LED_RESPONSE = 130,
-      CMD_LEDA = 140,
-      CMD_LEDA_REQUEST = 150,
-      CMD_LEDA_RESPONSE = 160,
+      CMD_LED_1 = 110,
+      CMD_LED_1_REQUEST = 120,
+      CMD_LED_1_RESPONSE = 130,
+      CMD_LED_2 = 140,
+      CMD_LED_2_REQUEST = 150,
+      CMD_LED_2_RESPONSE = 160,
       CMD_ENCL_REQUEST = 170,
       CMD_ENCR_REQUEST = 180,
       CMD_ENCB_REQUEST = 190,
@@ -52,8 +52,8 @@ namespace robot_mitya {
       static void processInput(void (*handler)(Command, int, int, int));
       static void send(char* message);
       static void send(int status);
-      static void sendLED(bool isTurnedOn);
-      static void sendLEDA(int brightness);
+      static void sendLed1(bool isTurnedOn);
+      static void sendLed2(bool isTurnedOn);
       static void sendENCL(long steps);
       static void sendENCR(long steps);
       static void sendDistance(long distanceInMicrons);

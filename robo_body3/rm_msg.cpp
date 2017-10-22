@@ -36,19 +36,17 @@ void Message::send(int status) {
   ROBO_SERIAL.print(COMMAND_SEPARATOR);
 }
 
-void Message::sendLED(bool isTurnedOn) {
-  ROBO_SERIAL.print("!LED");
+void Message::sendLed1(bool isTurnedOn) {
+  ROBO_SERIAL.print("!L1");
   ROBO_SERIAL.print(WORD_SEPARATOR);
   ROBO_SERIAL.print(isTurnedOn ? 1 : 0);
   ROBO_SERIAL.print(COMMAND_SEPARATOR);
 }
 
-void Message::sendLEDA(int brightness) {
-  ROBO_SERIAL.print("!LEDA");
+void Message::sendLed2(bool isTurnedOn) {
+  ROBO_SERIAL.print("!L2");
   ROBO_SERIAL.print(WORD_SEPARATOR);
-  if (brightness < 0) brightness = 0;
-  else if (brightness > 255) brightness = 255;
-  ROBO_SERIAL.print(brightness);
+  ROBO_SERIAL.print(isTurnedOn ? 1 : 0);
   ROBO_SERIAL.print(COMMAND_SEPARATOR);
 }
 
@@ -250,28 +248,28 @@ bool Message::getCommand(char *text, Command &command) {
     command = CMD_TAIL_FREEZE;
     return true;
   }
-  if (strcmp(text, "LED") == 0) {
-    command = CMD_LED;
+  if (strcmp(text, "L1") == 0) {
+    command = CMD_LED_1;
     return true;
   }
-  if (strcmp(text, "?LED") == 0) {
-    command = CMD_LED_REQUEST;
+  if (strcmp(text, "?L1") == 0) {
+    command = CMD_LED_1_REQUEST;
     return true;
   }
-  if (strcmp(text, "!LED") == 0) {
-    command = CMD_LED_RESPONSE;
+  if (strcmp(text, "!L1") == 0) {
+    command = CMD_LED_1_RESPONSE;
     return true;
   }
-  if (strcmp(text, "LEDA") == 0) {
-    command = CMD_LEDA;
+  if (strcmp(text, "L2") == 0) {
+    command = CMD_LED_2;
     return true;
   }
-  if (strcmp(text, "?LEDA") == 0) {
-    command = CMD_LEDA_REQUEST;
+  if (strcmp(text, "?L2") == 0) {
+    command = CMD_LED_2_REQUEST;
     return true;
   }
-  if (strcmp(text, "!LEDA") == 0) {
-    command = CMD_LEDA_RESPONSE;
+  if (strcmp(text, "!L2") == 0) {
+    command = CMD_LED_2_RESPONSE;
     return true;
   }  
   if (strcmp(text, "?ENCL") == 0) {
