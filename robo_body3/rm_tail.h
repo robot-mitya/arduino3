@@ -13,10 +13,10 @@
 
 namespace robot_mitya {
 
-  #define MIN_DEGREE 0
-  #define MAX_DEGREE 180
+  #define MIN_DEGREE 5
   #define MID_DEGREE 90
-  
+  #define MAX_DEGREE 175
+
   // Servo will be detached after 1 second of idle state.
   #define DETACH_TIMEOUT_MICROS 1000000
   
