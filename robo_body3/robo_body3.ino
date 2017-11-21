@@ -55,13 +55,23 @@ void commandHandler(Command command, int param1, int param2, int param3) {
       Equipment::tailFreeze();
       break;
     case CMD_LED_1:
-      Equipment::led1(param1 != 0);
+      if (param1 < 0) {
+        Equipment::switchLed1();
+        Message::sendLed1(Equipment::getLed1());
+      } else {
+        Equipment::led1(param1 > 0);
+      }
       break;
     case CMD_LED_1_REQUEST:
       Message::sendLed1(Equipment::getLed1());
       break;
     case CMD_LED_2:
-      Equipment::led2(param1 != 0);
+      if (param1 < 0) {
+        Equipment::switchLed2();
+        Message::sendLed2(Equipment::getLed2());
+      } else {
+        Equipment::led2(param1 > 0);
+      }
       break;
     case CMD_LED_2_REQUEST:
       Message::sendLed2(Equipment::getLed2());

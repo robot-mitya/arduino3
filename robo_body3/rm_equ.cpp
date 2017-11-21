@@ -149,12 +149,20 @@ bool Equipment::getLed1() {
   return digitalRead(Cfg::PIN_LED_1) == HIGH;
 }
 
+void Equipment::switchLed1() {
+  Equipment::led1(!Equipment::getLed1());
+}
+
 void Equipment::led2(bool turnOn) {
   digitalWrite(Cfg::PIN_LED_2, turnOn);
 }
 
 bool Equipment::getLed2() {
   return digitalRead(Cfg::PIN_LED_2) == HIGH;
+}
+
+void Equipment::switchLed2() {
+  Equipment::led2(!Equipment::getLed2());
 }
 
 void Equipment::updateMicronsPerEncoderStep(int micronsPerStep) {

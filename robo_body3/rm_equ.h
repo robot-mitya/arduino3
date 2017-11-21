@@ -33,8 +33,10 @@ namespace robot_mitya {
 
       static void led1(bool turnOn);
       static bool getLed1();
+      static void switchLed1();
       static void led2(bool turnOn);
       static bool getLed2();
+      static void switchLed2();
 
       static void updateMicronsPerEncoderStep(int micronsPerStep);
 
