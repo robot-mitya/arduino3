@@ -14,7 +14,8 @@ namespace robot_mitya {
   class Cfg {
     public:
       // Baud rate of the controller-PC serial link.
-      static const int SERIAL_BAUD_RATE = 9600;
+      //static const int SERIAL_BAUD_RATE = 9600;
+      static const long SERIAL_BAUD_RATE = 115200;
       // Tail servo pin.
       static const int PIN_TAIL = 12;
       // Headlights pins.
