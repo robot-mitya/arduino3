@@ -12,368 +12,237 @@ using namespace robot_mitya;
 
 #define ROBO_SERIAL Serial
 
-static char charArray[2] = "\0"; // + null terminating (2 chars)
-static char commandText[11] = "";
-static char param1Text[7] = "";
-static char param2Text[7] = "";
-static char param3Text[7] = "";
-static int wordCounter = 0;
-static bool hasError = false;
-static bool inWordSeparator = false;
+#define LOBYTE(v)        ((unsigned char) (v))
+#define HIBYTE(v)        ((unsigned char) (((unsigned int) (v)) >> 8))
+#define MAKEWORD(lo, hi) ((uint16_t) (lo) | ((uint16_t) (hi) << 8))
+
+static const int NO_PARAMS_MESSAGE_SIZE = 6;
+static const int ONE_PARAM_MESSAGE_SIZE = 8;
+static const int TWO_PARAMS_MESSAGE_SIZE = 10;
+static const int THREE_PARAMS_MESSAGE_SIZE = 12;
+
+static const int MAX_MESSAGE_SIZE = THREE_PARAMS_MESSAGE_SIZE;
+static uint8_t data[MAX_MESSAGE_SIZE];
+
+static const int BUFFER_SIZE = 256;
+static uint8_t buffer[BUFFER_SIZE];
+
+static uint8_t message[MAX_MESSAGE_SIZE];
+static int messagePos = 0;
+static int messageSize;
+static int errorStatus = 0; // 0 means no error.
+
+static const int HEADER_INDEX_0 = 0;
+static const int HEADER_INDEX_1 = 1;
+static const int SIZE_INDEX = 2;
+static const int COMMAND_INDEX = 3;
+static const int CS_1_INDEX = 4;
+static const int CS_2_INDEX = 5;
+static const int PARAM_1_LSB_INDEX = 6;
+static const int PARAM_1_MSB_INDEX = 7;
+static const int PARAM_2_LSB_INDEX = 8;
+static const int PARAM_2_MSB_INDEX = 9;
+static const int PARAM_3_LSB_INDEX = 10;
+static const int PARAM_3_MSB_INDEX = 11;
+
+int Message::checksum1(uint8_t* data, int size)
+{
+  return 0x00;
+}
+
+int Message::checksum2(int cs1)
+{
+  return 0x00;
+}
 
 void Message::initialize() {
+  data[0] = 0xFF;
+  data[1] = 0xFF;
   ROBO_SERIAL.begin(Cfg::SERIAL_BAUD_RATE);
 }
 
-void Message::send(char *message) {
-  ROBO_SERIAL.print(message);
-}
-
 void Message::send(int status) {
-  ROBO_SERIAL.print("!");
-  ROBO_SERIAL.print(WORD_SEPARATOR);
-  ROBO_SERIAL.print(status);
-  ROBO_SERIAL.print(COMMAND_SEPARATOR);
+  int length = ONE_PARAM_MESSAGE_SIZE;
+  data[SIZE_INDEX] = length;
+  data[COMMAND_INDEX] = CMD_STATUS_RESPONSE;
+  data[PARAM_1_LSB_INDEX] = LOBYTE(status);
+  data[PARAM_1_MSB_INDEX] = HIBYTE(status);
+  data[CS_1_INDEX] = checksum1(data, length);
+  data[CS_2_INDEX] = checksum2(data[CS_1_INDEX]);
+  ROBO_SERIAL.write(data, length);
 }
 
 void Message::sendLed1(bool isTurnedOn) {
-  ROBO_SERIAL.print("!L1");
-  ROBO_SERIAL.print(WORD_SEPARATOR);
-  ROBO_SERIAL.print(isTurnedOn ? 1 : 0);
-  ROBO_SERIAL.print(COMMAND_SEPARATOR);
+  int length = ONE_PARAM_MESSAGE_SIZE;
+  data[SIZE_INDEX] = length;
+  data[COMMAND_INDEX] = CMD_LED_1_RESPONSE;
+  data[PARAM_1_LSB_INDEX] = isTurnedOn ? 0x01 : 0x00;
+  data[PARAM_1_MSB_INDEX] = 0x00;
+  data[CS_1_INDEX] = checksum1(data, length);
+  data[CS_2_INDEX] = checksum2(data[CS_1_INDEX]);
+  ROBO_SERIAL.write(data, length);
 }
 
 void Message::sendLed2(bool isTurnedOn) {
-  ROBO_SERIAL.print("!L2");
-  ROBO_SERIAL.print(WORD_SEPARATOR);
-  ROBO_SERIAL.print(isTurnedOn ? 1 : 0);
-  ROBO_SERIAL.print(COMMAND_SEPARATOR);
+  int length = ONE_PARAM_MESSAGE_SIZE;
+  data[SIZE_INDEX] = length;
+  data[COMMAND_INDEX] = CMD_LED_2_RESPONSE;
+  data[PARAM_1_LSB_INDEX] = isTurnedOn ? 0x01 : 0x00;
+  data[PARAM_1_MSB_INDEX] = 0x00;
+  data[CS_1_INDEX] = checksum1(data, length);
+  data[CS_2_INDEX] = checksum2(data[CS_1_INDEX]);
+  ROBO_SERIAL.write(data, length);
 }
 
 
 void Message::sendENCL(long steps) {
-  ROBO_SERIAL.print("!ENCL");
-  ROBO_SERIAL.print(WORD_SEPARATOR);
-  ROBO_SERIAL.print(steps);
-  ROBO_SERIAL.print(COMMAND_SEPARATOR);
+  int length = ONE_PARAM_MESSAGE_SIZE;
+  data[SIZE_INDEX] = length;
+  data[COMMAND_INDEX] = CMD_ENCL_RESPONSE;
+  data[PARAM_1_LSB_INDEX] = LOBYTE(steps);
+  data[PARAM_1_MSB_INDEX] = HIBYTE(steps);
+  data[CS_1_INDEX] = checksum1(data, length);
+  data[CS_2_INDEX] = checksum2(data[CS_1_INDEX]);
+  ROBO_SERIAL.write(data, length);
 }
 
 void Message::sendENCR(long steps) {
-  ROBO_SERIAL.print("!ENCR");
-  ROBO_SERIAL.print(WORD_SEPARATOR);
-  ROBO_SERIAL.print(steps);
-  ROBO_SERIAL.print(COMMAND_SEPARATOR);
+  int length = ONE_PARAM_MESSAGE_SIZE;
+  data[SIZE_INDEX] = length;
+  data[COMMAND_INDEX] = CMD_ENCR_RESPONSE;
+  data[PARAM_1_LSB_INDEX] = LOBYTE(steps);
+  data[PARAM_1_MSB_INDEX] = HIBYTE(steps);
+  data[CS_1_INDEX] = checksum1(data, length);
+  data[CS_2_INDEX] = checksum2(data[CS_1_INDEX]);
+  ROBO_SERIAL.write(data, length);
 }
 
 void Message::sendDistance(long distanceInMicrons) {
   long meters = distanceInMicrons / 1000000;
   long millimeters = (distanceInMicrons - meters * 1000000) / 1000;
-  ROBO_SERIAL.print("!DIST");
-  ROBO_SERIAL.print(WORD_SEPARATOR);
-  ROBO_SERIAL.print((int) meters);
-  ROBO_SERIAL.print(WORD_SEPARATOR);
-  ROBO_SERIAL.print((int) millimeters);
-  ROBO_SERIAL.print(COMMAND_SEPARATOR);
+  int length = TWO_PARAMS_MESSAGE_SIZE;
+  data[SIZE_INDEX] = length;
+  data[COMMAND_INDEX] = CMD_DIST_RESPONSE;
+  data[PARAM_1_LSB_INDEX] = LOBYTE(meters);
+  data[PARAM_1_MSB_INDEX] = HIBYTE(meters);
+  data[PARAM_1_LSB_INDEX] = LOBYTE(millimeters);
+  data[PARAM_1_MSB_INDEX] = HIBYTE(millimeters);
+  data[CS_1_INDEX] = checksum1(data, length);
+  data[CS_2_INDEX] = checksum2(data[CS_1_INDEX]);
+  ROBO_SERIAL.write(data, length);
 }
 
 void Message::sendSpeed(int speedInMetersPerHour) {
-  ROBO_SERIAL.print("!SPD");
-  ROBO_SERIAL.print(WORD_SEPARATOR);
-  ROBO_SERIAL.print(speedInMetersPerHour);
-  ROBO_SERIAL.print(COMMAND_SEPARATOR);  
+  int length = ONE_PARAM_MESSAGE_SIZE;
+  data[SIZE_INDEX] = length;
+  data[COMMAND_INDEX] = CMD_SPD_RESPONSE;
+  data[PARAM_1_LSB_INDEX] = LOBYTE(speedInMetersPerHour);
+  data[PARAM_1_MSB_INDEX] = HIBYTE(speedInMetersPerHour);
+  data[CS_1_INDEX] = checksum1(data, length);
+  data[CS_2_INDEX] = checksum2(data[CS_1_INDEX]);
+  ROBO_SERIAL.write(data, length);
 }
 
 void Message::sendBatteryVoltage(int batteryVoltage) {
-  ROBO_SERIAL.print("!BV");
-  ROBO_SERIAL.print(WORD_SEPARATOR);
-  ROBO_SERIAL.print(batteryVoltage);
-  ROBO_SERIAL.print(COMMAND_SEPARATOR);  
+  int length = ONE_PARAM_MESSAGE_SIZE;
+  data[SIZE_INDEX] = length;
+  data[COMMAND_INDEX] = CMD_BV_RESPONSE;
+  data[PARAM_1_LSB_INDEX] = LOBYTE(batteryVoltage);
+  data[PARAM_1_MSB_INDEX] = HIBYTE(batteryVoltage);
+  data[CS_1_INDEX] = checksum1(data, length);
+  data[CS_2_INDEX] = checksum2(data[CS_1_INDEX]);
+  ROBO_SERIAL.write(data, length);
 }
 
 void Message::sendDcDcVoltage(int dcDcVoltage) {
-  ROBO_SERIAL.print("!DV");
-  ROBO_SERIAL.print(WORD_SEPARATOR);
-  ROBO_SERIAL.print(dcDcVoltage);
-  ROBO_SERIAL.print(COMMAND_SEPARATOR);  
+  int length = ONE_PARAM_MESSAGE_SIZE;
+  data[SIZE_INDEX] = length;
+  data[COMMAND_INDEX] = CMD_DV_RESPONSE;
+  data[PARAM_1_LSB_INDEX] = LOBYTE(dcDcVoltage);
+  data[PARAM_1_MSB_INDEX] = HIBYTE(dcDcVoltage);
+  data[CS_1_INDEX] = checksum1(data, length);
+  data[CS_2_INDEX] = checksum2(data[CS_1_INDEX]);
+  ROBO_SERIAL.write(data, length);
 }
 
 void Message::sendMicronsPerStep(int micronsPerStep) {
-  ROBO_SERIAL.print("!MCPS");
-  ROBO_SERIAL.print(WORD_SEPARATOR);
-  ROBO_SERIAL.print(micronsPerStep);
-  ROBO_SERIAL.print(COMMAND_SEPARATOR);  
+  int length = ONE_PARAM_MESSAGE_SIZE;
+  data[SIZE_INDEX] = length;
+  data[COMMAND_INDEX] = CMD_MCPS_RESPONSE;
+  data[PARAM_1_LSB_INDEX] = LOBYTE(micronsPerStep);
+  data[PARAM_1_MSB_INDEX] = HIBYTE(micronsPerStep);
+  data[CS_1_INDEX] = checksum1(data, length);
+  data[CS_2_INDEX] = checksum2(data[CS_1_INDEX]);
+  ROBO_SERIAL.write(data, length);
 }
 
 void Message::sendBatteryVoltageFactor(long batteryVoltageFactor) {
-  ROBO_SERIAL.print("!BVF");
-  ROBO_SERIAL.print(WORD_SEPARATOR);
-  ROBO_SERIAL.print(batteryVoltageFactor);
-  ROBO_SERIAL.print(COMMAND_SEPARATOR);  
+  int length = ONE_PARAM_MESSAGE_SIZE;
+  data[SIZE_INDEX] = length;
+  data[COMMAND_INDEX] = CMD_BVF_RESPONSE;
+  data[PARAM_1_LSB_INDEX] = LOBYTE(batteryVoltageFactor);
+  data[PARAM_1_MSB_INDEX] = HIBYTE(batteryVoltageFactor);
+  data[CS_1_INDEX] = checksum1(data, length);
+  data[CS_2_INDEX] = checksum2(data[CS_1_INDEX]);
+  ROBO_SERIAL.write(data, length);
 }
 
 void Message::sendDcDcVoltageFactor(long dcDcVoltageFactor) {
-  ROBO_SERIAL.print("!DVF");
-  ROBO_SERIAL.print(WORD_SEPARATOR);
-  ROBO_SERIAL.print(dcDcVoltageFactor);
-  ROBO_SERIAL.print(COMMAND_SEPARATOR);  
+  int length = ONE_PARAM_MESSAGE_SIZE;
+  data[SIZE_INDEX] = length;
+  data[COMMAND_INDEX] = CMD_DVF_RESPONSE;
+  data[PARAM_1_LSB_INDEX] = LOBYTE(dcDcVoltageFactor);
+  data[PARAM_1_MSB_INDEX] = HIBYTE(dcDcVoltageFactor);
+  data[CS_1_INDEX] = checksum1(data, length);
+  data[CS_2_INDEX] = checksum2(data[CS_1_INDEX]);
+  ROBO_SERIAL.write(data, length);
 }
 
 void Message::processInput(void (*handler)(Command, int, int, int)) {
-  char ch;
-  Command command;
-  int value1, value2, value3;
   while (ROBO_SERIAL.available() > 0) {
-    ch = (char)ROBO_SERIAL.read();
+    int bufferSize = ROBO_SERIAL.readBytes(buffer, BUFFER_SIZE);
+    
+    for (int bufferPos = 0; bufferPos < bufferSize; bufferPos++) {
 
-    if (ch == '\n' || ch == '\r') {
-      continue;
-    }
+      if ((messagePos == 0) && (buffer[bufferPos] != 0xFF)) {
+        errorStatus = RET_NOISE_RECEIVED;
+        continue;
+      } else if ((messagePos == 1) && (buffer[bufferPos] != 0xFF)) {
+        errorStatus = RET_NOISE_RECEIVED;
+        continue;
+      }
 
-    if (ch == COMMAND_SEPARATOR && handler != NULL) {
-      if (getCommand(commandText, command)) {
-        if (getParam(param1Text, value1) && 
-            getParam(param2Text, value2) && 
-            getParam(param3Text, value3)) {
-          if (!hasError) {
-            if (command != CMD_UNKNOWN || value1 != 0 || value2 != 0 || value3 != 0) {
-              handler(command, value1, value2, value3);
-            }
-          }
-        } else {
-          send(RET_BAD_PARAMETER);
+      if (messagePos == 2) {
+        messageSize = buffer[bufferPos];
+        if ((messageSize != NO_PARAMS_MESSAGE_SIZE) &&
+            (messageSize != ONE_PARAM_MESSAGE_SIZE) &&
+            (messageSize != TWO_PARAMS_MESSAGE_SIZE) &&
+            (messageSize != THREE_PARAMS_MESSAGE_SIZE)) {
+          errorStatus = RET_WRONG_PARAMS_COUNT;
+          continue;
         }
-      } else {
-        send(RET_BAD_COMMAND);
       }
-      strcpy(commandText, "");
-      strcpy(param1Text, "");
-      strcpy(param2Text, "");
-      strcpy(param3Text, "");
-      wordCounter = 0;
-      hasError = false;
-      inWordSeparator = false;
-      continue;
-    }
 
-    //(white space)
-    if (ch <= 32) {
-      if (!inWordSeparator) {
-        inWordSeparator = true;
-        wordCounter++;
+      if (errorStatus != 0) {
+        send(errorStatus);
+        errorStatus = 0;
       }
-      continue;
+      message[messagePos++] = buffer[bufferPos];
+
+      if (messagePos == messageSize) {
+        uint8_t cs1 = checksum1(message, messageSize);
+        uint8_t cs2 = checksum2(cs1);
+        if ((message[CS_1_INDEX] == cs1) && (message[CS_2_INDEX] == cs2)) {
+          int param1 = messageSize > NO_PARAMS_MESSAGE_SIZE ? MAKEWORD(message[PARAM_1_LSB_INDEX], message[PARAM_1_MSB_INDEX]) : 0;
+          int param2 = messageSize > ONE_PARAM_MESSAGE_SIZE ? MAKEWORD(message[PARAM_2_LSB_INDEX], message[PARAM_2_MSB_INDEX]) : 0;
+          int param3 = messageSize > TWO_PARAMS_MESSAGE_SIZE ? MAKEWORD(message[PARAM_3_LSB_INDEX], message[PARAM_3_MSB_INDEX]) : 0;
+          handler(message[COMMAND_INDEX], param1, param2, param3);
+        } else {
+          send(RET_CS_ERROR);
+        }
+        messagePos = 0;
+      }
     }
-
-    inWordSeparator = false;
-    charArray[0] = ch;
-    switch (wordCounter) {
-      case 0:
-        strcat(commandText, charArray);
-        break;
-      case 1:
-        strcat(param1Text, charArray);
-        break;
-      case 2:
-        strcat(param2Text, charArray);
-        break;
-      case 3:
-        strcat(param3Text, charArray);
-        break;
-      default:
-        if (!hasError) send(RET_TOO_MANY_WORDS);
-        hasError = true;
-    }
-  }  
-}
-
-int Message::charToInt(char ch) {
-  switch (ch) {
-    case '0': return 0;
-    case '1': return 1;
-    case '2': return 2;
-    case '3': return 3;
-    case '4': return 4;
-    case '5': return 5;
-    case '6': return 6;
-    case '7': return 7;
-    case '8': return 8;
-    case '9': return 9;
-    default: return -1;
   }
-}
-
-bool Message::getCommand(char *text, Command &command) {
-  int length = strlen(text);
-  if (length == 0) {
-    command = CMD_UNKNOWN;
-    return false;
-  }
-  if (strcmp(text, "?") == 0) {
-    command = CMD_STATUS_REQUEST;
-    return true;
-  }
-  if (strcmp(text, "!") == 0) {
-    command = CMD_STATUS_RESPONSE;
-    return true;
-  }
-  if (strcmp(text, "RST") == 0) {
-    command = CMD_RESET;
-    return true;
-  }
-  if (strcmp(text, "ML") == 0) {
-    command = CMD_MOTOR_LEFT;
-    return true;
-  }
-  if (strcmp(text, "MR") == 0) {
-    command = CMD_MOTOR_RIGHT;
-    return true;
-  }
-  if (strcmp(text, "MB") == 0) {
-    command = CMD_MOTOR_BOTH;
-    return true;
-  }
-  if (strcmp(text, "TLR") == 0) {
-    command = CMD_TAIL_ROTATE;
-    return true;
-  }
-  if (strcmp(text, "TLS") == 0) {
-    command = CMD_TAIL_SWING;
-    return true;
-  }
-  if (strcmp(text, "TLSA") == 0) {
-    command = CMD_TAIL_SWING_A;
-    return true;
-  }
-  if (strcmp(text, "TLF") == 0) {
-    command = CMD_TAIL_FREEZE;
-    return true;
-  }
-  if (strcmp(text, "L1") == 0) {
-    command = CMD_LED_1;
-    return true;
-  }
-  if (strcmp(text, "?L1") == 0) {
-    command = CMD_LED_1_REQUEST;
-    return true;
-  }
-  if (strcmp(text, "!L1") == 0) {
-    command = CMD_LED_1_RESPONSE;
-    return true;
-  }
-  if (strcmp(text, "L2") == 0) {
-    command = CMD_LED_2;
-    return true;
-  }
-  if (strcmp(text, "?L2") == 0) {
-    command = CMD_LED_2_REQUEST;
-    return true;
-  }
-  if (strcmp(text, "!L2") == 0) {
-    command = CMD_LED_2_RESPONSE;
-    return true;
-  }  
-  if (strcmp(text, "?ENCL") == 0) {
-    command = CMD_ENCL_REQUEST;
-    return true;
-  }
-  if (strcmp(text, "?ENCR") == 0) {
-    command = CMD_ENCR_REQUEST;
-    return true;
-  }
-  if (strcmp(text, "?ENCB") == 0) {
-    command = CMD_ENCB_REQUEST;
-    return true;
-  }
-  if (strcmp(text, "!ENCL") == 0) {
-    command = CMD_ENCL_RESPONSE;
-    return true;
-  }
-  if (strcmp(text, "!ENCR") == 0) {
-    command = CMD_ENCR_RESPONSE;
-    return true;
-  }
-  if (strcmp(text, "?DIST") == 0) {
-    command = CMD_DIST_REQUEST;
-    return true;
-  }
-  if (strcmp(text, "!DIST") == 0) {
-    command = CMD_DIST_RESPONSE;
-    return true;
-  }
-  if (strcmp(text, "?SPD") == 0) {
-    command = CMD_SPD_REQUEST;
-    return true;
-  }
-  if (strcmp(text, "!SPD") == 0) {
-    command = CMD_SPD_RESPONSE;
-    return true;
-  }
-  if (strcmp(text, "?BV") == 0) {
-    command = CMD_BV_REQUEST;
-    return true;
-  }
-  if (strcmp(text, "!BV") == 0) {
-    command = CMD_BV_RESPONSE;
-    return true;
-  }
-  if (strcmp(text, "?DV") == 0) {
-    command = CMD_DV_REQUEST;
-    return true;
-  }
-  if (strcmp(text, "!DV") == 0) {
-    command = CMD_DV_RESPONSE;
-    return true;
-  }
-  if (strcmp(text, "?MCPS") == 0) {
-    command = CMD_MCPS_REQUEST;
-    return true;
-  }
-  if (strcmp(text, "!MCPS") == 0) {
-    command = CMD_MCPS_RESPONSE;
-    return true;
-  }
-  if (strcmp(text, "?BVF") == 0) {
-    command = CMD_BVF_REQUEST;
-    return true;
-  }
-  if (strcmp(text, "!BVF") == 0) {
-    command = CMD_BVF_RESPONSE;
-    return true;
-  }  
-  if (strcmp(text, "?DVF") == 0) {
-    command = CMD_DVF_REQUEST;
-    return true;
-  }
-  if (strcmp(text, "!DVF") == 0) {
-    command = CMD_DVF_RESPONSE;
-    return true;
-  }
-  command = CMD_UNKNOWN;
-  return false;
-}
-
-bool Message::getParam(char *text, int &value) {
-  int length = strlen(text);
-  if (length == 0) {
-    value = 0;
-    return true;
-  }
-  bool isNegative = text[0] == '-';
-  if (isNegative) text[0] = '0';
-  int last = length - 1;
-  value = 0;
-  int digit;
-  int factor = 1;
-  for (int i = last; i >= 0; i--) {
-    digit = charToInt(text[i]);
-    if (digit < 0) {
-      value = 0;
-      return false;
-    }
-    if (i < last) factor *= 10;
-    value += digit * factor;
-  }
-  if (isNegative) value = -value;
-  return true;
 }
 

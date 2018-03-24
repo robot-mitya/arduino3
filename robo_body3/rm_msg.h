@@ -3,54 +3,60 @@
 
 namespace robot_mitya {
   enum Command {
-      CMD_UNKNOWN = 0,
-      CMD_STATUS_REQUEST = 10,
-      CMD_STATUS_RESPONSE = 20,
-      CMD_RESET = 30,
-      CMD_MOTOR_LEFT = 40,
-      CMD_MOTOR_RIGHT = 50,
-      CMD_MOTOR_BOTH = 60,
-      CMD_TAIL_ROTATE = 70,
-      CMD_TAIL_SWING = 80,
-      CMD_TAIL_SWING_A = 90,
-      CMD_TAIL_FREEZE = 100,
-      CMD_LED_1 = 110,
-      CMD_LED_1_REQUEST = 120,
-      CMD_LED_1_RESPONSE = 130,
-      CMD_LED_2 = 140,
-      CMD_LED_2_REQUEST = 150,
-      CMD_LED_2_RESPONSE = 160,
-      CMD_ENCL_REQUEST = 170,
-      CMD_ENCR_REQUEST = 180,
-      CMD_ENCB_REQUEST = 190,
-      CMD_ENCL_RESPONSE = 200,
-      CMD_ENCR_RESPONSE = 210,
-      CMD_DIST_REQUEST = 220,
-      CMD_DIST_RESPONSE = 230,
-      CMD_SPD_REQUEST = 240,
-      CMD_SPD_RESPONSE = 250,
-      CMD_BV_REQUEST = 260,
-      CMD_BV_RESPONSE = 270,
-      CMD_DV_REQUEST = 280,
-      CMD_DV_RESPONSE = 290,      
-      CMD_MCPS_REQUEST = 300,
-      CMD_MCPS_RESPONSE = 310,
-      CMD_BVF_REQUEST = 320,
-      CMD_BVF_RESPONSE = 330,
-      CMD_DVF_REQUEST = 340,
-      CMD_DVF_RESPONSE = 350
+      CMD_UNKNOWN         = 0x00,
+      CMD_MOTOR_LEFT      = 0x01,
+      CMD_MOTOR_RIGHT     = 0x02,
+      CMD_MOTOR_BOTH      = 0x03,
+      
+      CMD_TAIL_ROTATE     = 0x08,
+      CMD_TAIL_SWING      = 0x09,
+      CMD_TAIL_SWING_A    = 0x0A,
+      CMD_TAIL_FREEZE     = 0x0F,
+
+      CMD_LED_1           = 0x10,
+      CMD_LED_1_REQUEST   = 0x11,
+      CMD_LED_1_RESPONSE  = 0x12,
+      CMD_LED_2           = 0x13,
+      CMD_LED_2_REQUEST   = 0x14,
+      CMD_LED_2_RESPONSE  = 0x15,
+      
+      CMD_ENCL_REQUEST    = 0x40,
+      CMD_ENCR_REQUEST    = 0x41,
+      CMD_ENCB_REQUEST    = 0x42,
+      CMD_ENCL_RESPONSE   = 0x43,
+      CMD_ENCR_RESPONSE   = 0x44,
+      CMD_DIST_REQUEST    = 0x45,
+      CMD_DIST_RESPONSE   = 0x46,
+      CMD_SPD_REQUEST     = 0x47,
+      CMD_SPD_RESPONSE    = 0x48,
+      CMD_MCPS_REQUEST    = 0x49,
+      CMD_MCPS_RESPONSE   = 0x4A,
+      
+      CMD_BV_REQUEST      = 0x50,
+      CMD_BV_RESPONSE     = 0x51,
+      CMD_DV_REQUEST      = 0x52,
+      CMD_DV_RESPONSE     = 0x53,      
+      CMD_BVF_REQUEST     = 0x54,
+      CMD_BVF_RESPONSE    = 0x55,
+      CMD_DVF_REQUEST     = 0x56,
+      CMD_DVF_RESPONSE    = 0x57,
+      
+      CMD_RESET           = 0xF0,
+      CMD_STATUS_REQUEST  = 0xF1,
+      CMD_STATUS_RESPONSE = 0xF2
   };
   
   class Message {
     public:
       static const int RET_OK = 0;
       static const int RET_BAD_PARAMETER = 1;
-      static const int RET_TOO_MANY_WORDS = 2;
+      static const int RET_WRONG_PARAMS_COUNT = 2;
       static const int RET_BAD_COMMAND = 3;
+      static const int RET_NOISE_RECEIVED = 4;
+      static const int RET_CS_ERROR = 5;
     
       static void initialize();
       static void processInput(void (*handler)(Command, int, int, int));
-      static void send(char* message);
       static void send(int status);
       static void sendLed1(bool isTurnedOn);
       static void sendLed2(bool isTurnedOn);
@@ -63,13 +69,9 @@ namespace robot_mitya {
       static void sendMicronsPerStep(int micronsPerStep);
       static void sendBatteryVoltageFactor(long batteryVoltageFactor);
       static void sendDcDcVoltageFactor(long dcDcVoltageFactor);
-    private:
-      static const char WORD_SEPARATOR = ' ';
-      static const char COMMAND_SEPARATOR = ';';
-      static int charToInt(char ch);
-      static char* getCommandText(Command command);
-      static bool getCommand(char *text, Command &command);
-      static bool getParam(char *text, int &value);
+    private:      
+      static int Message::checksum1(uint8_t* data, int size);
+      static int Message::checksum2(int cs1);
   };
 }
 
