@@ -23,6 +23,7 @@ static bool inWordSeparator = false;
 
 void Message::initialize() {
   ROBO_SERIAL.begin(Cfg::SERIAL_BAUD_RATE);
+  ROBO_SERIAL.setTimeout(0);
 }
 
 void Message::send(char *message) {
