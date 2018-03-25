@@ -70,8 +70,8 @@ namespace robot_mitya {
       static void sendBatteryVoltageFactor(long batteryVoltageFactor);
       static void sendDcDcVoltageFactor(long dcDcVoltageFactor);
     private:      
-      static int Message::checksum1(uint8_t* data, int size);
-      static int Message::checksum2(int cs1);
+      static int checksum1(uint8_t* data, int size);
+      static int checksum2(int cs1);
   };
 }
 

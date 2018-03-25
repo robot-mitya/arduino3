@@ -59,6 +59,7 @@ void Message::initialize() {
   data[0] = 0xFF;
   data[1] = 0xFF;
   ROBO_SERIAL.begin(Cfg::SERIAL_BAUD_RATE);
+  ROBO_SERIAL.setTimeout(0);
 }
 
 void Message::send(int status) {
